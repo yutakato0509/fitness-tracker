@@ -603,19 +603,32 @@ function save(k, d) { localStorage.setItem(k, JSON.stringify(d)); }
 /* ─────────────────────────────────────────
    UTILS
 ───────────────────────────────────────── */
-function uid()   { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
-function today() { return new Date().toISOString().slice(0,10); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// JST (UTC+9) で現在時刻を表すDateオブジェクトを返す
+function jstNow() { return new Date(Date.now() + 9 * 60 * 60 * 1000); }
+
+// JSTの今日の日付を YYYY-MM-DD 形式で返す
+function today() { return jstNow().toISOString().slice(0, 10); }
+
+// 'YYYY-MM-DD' 文字列を安全にパースして各部品を返す（タイムゾーン非依存）
+function parseDate(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  // UTC正午を基準にすることで、どのタイムゾーンでも同じ曜日が得られる
+  const dow = new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay();
+  return { y, m, d, dow };
+}
 
 function fmtDateFull(s) {
   if (!s) return '';
-  const d = new Date(s + 'T00:00:00');
-  const wd = ['日','月','火','水','木','金','土'][d.getDay()];
-  return `${d.getMonth()+1}/${d.getDate()}(${wd})`;
+  const { m, d, dow } = parseDate(s);
+  const wd = ['日','月','火','水','木','金','土'][dow];
+  return `${m}/${d}(${wd})`;
 }
 function fmtDateShort(s) {
   if (!s) return '';
-  const d = new Date(s + 'T00:00:00');
-  return `${d.getMonth()+1}/${d.getDate()}`;
+  const { m, d } = parseDate(s);
+  return `${m}/${d}`;
 }
 
 function toast(msg) {
@@ -629,11 +642,11 @@ function toast(msg) {
    INIT
 ───────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
-  const d  = new Date();
-  const wd = ['日','月','火','水','木','金','土'][d.getDay()];
+  const d  = jstNow(); // JSTベースで日付取得
+  const wd = ['日','月','火','水','木','金','土'][d.getUTCDay()];
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('hdr-day').textContent  = `${d.getDate()} ${months[d.getMonth()]} (${wd})`;
-  document.getElementById('hdr-date').textContent = `${d.getFullYear()}`;
+  document.getElementById('hdr-day').textContent  = `${d.getUTCDate()} ${months[d.getUTCMonth()]} (${wd})`;
+  document.getElementById('hdr-date').textContent = `${d.getUTCFullYear()}`;
 
   const t = today();
   ['w-date','c-date','b-date'].forEach(id => document.getElementById(id).value = t);
