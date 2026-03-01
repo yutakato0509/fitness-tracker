@@ -359,6 +359,57 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   height: 1px; margin: 0 -18px 18px;
   background: linear-gradient(90deg, transparent, rgba(255,85,0,.3) 40%, rgba(255,45,85,.3) 60%, transparent);
 }
+
+/* ═══════════ FAVORITES ═══════════ */
+.fav-section {
+  margin-bottom: 14px;
+}
+.fav-section-label {
+  font-size: 10px; font-weight: 800; color: #ff2d55;
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.fav-chips-row {
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+.fav-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 13px;
+  background: rgba(255,45,85,.08);
+  border: 1.5px solid rgba(255,45,85,.25);
+  border-radius: 20px;
+  font-size: 13px; font-weight: 700; color: var(--text);
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s, transform .12s;
+}
+.fav-chip:active {
+  background: rgba(255,45,85,.2);
+  transform: scale(.95);
+}
+.fav-chip .fav-chip-icon { font-size: 12px; }
+
+/* Exercise input + heart button row */
+.input-with-heart {
+  display: flex; gap: 8px; align-items: stretch;
+}
+.input-with-heart input { flex: 1; }
+.heart-btn {
+  flex-shrink: 0;
+  width: 48px;
+  background: var(--card2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 22px; line-height: 1;
+  cursor: pointer;
+  display: none;               /* 種目名が入力されたら表示 */
+  align-items: center; justify-content: center;
+  transition: background .18s, border-color .18s, transform .12s;
+  -webkit-appearance: none;
+}
+.heart-btn.visible   { display: flex; }
+.heart-btn.favorited { background: rgba(255,45,85,.12); border-color: #ff2d55; }
+.heart-btn:active    { transform: scale(.88); }
 </style>
 </head>
 <body>
@@ -385,10 +436,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="card-label">Weight Training</div>
     <div class="glow-line"></div>
 
+    <!-- お気に入り種目チップ -->
+    <div id="fav-section" class="fav-section" style="display:none;">
+      <div class="fav-section-label">❤️ お気に入り</div>
+      <div id="fav-chips-row" class="fav-chips-row"></div>
+    </div>
+
     <div class="field">
       <label>種目名</label>
-      <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
-             oninput="onExerciseInput(this.value)">
+      <div class="input-with-heart">
+        <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
+               oninput="onExerciseInput(this.value)">
+        <button class="heart-btn" id="heart-btn" onclick="toggleFav()" title="お気に入り登録">🤍</button>
+      </div>
       <datalist id="ex-list">
         <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
         <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
@@ -595,7 +655,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 /* ─────────────────────────────────────────
    STORAGE
 ───────────────────────────────────────── */
-const K = { w: 'ft_weights', c: 'ft_cardio', b: 'ft_body' };
+const K = { w: 'ft_weights', c: 'ft_cardio', b: 'ft_body', favs: 'ft_favs' };
 
 function load(k)    { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } }
 function save(k, d) { localStorage.setItem(k, JSON.stringify(d)); }
@@ -651,6 +711,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const t = today();
   ['w-date','c-date','b-date'].forEach(id => document.getElementById(id).value = t);
 
+  renderFavChips();
   renderWRecent();
   renderCRecent();
   renderBRecent();
@@ -673,9 +734,71 @@ function nav(view, el) {
 }
 
 /* ─────────────────────────────────────────
+   FAVORITES
+───────────────────────────────────────── */
+function toggleFav() {
+  const exercise = document.getElementById('w-exercise').value.trim();
+  if (!exercise) return;
+  const favs = load(K.favs);
+  const idx  = favs.indexOf(exercise);
+  if (idx === -1) {
+    favs.push(exercise);
+    toast('❤️ お気に入りに追加しました');
+  } else {
+    favs.splice(idx, 1);
+    toast('🗑️ お気に入りから削除しました');
+  }
+  save(K.favs, favs);
+  updateHeartBtn(exercise);
+  renderFavChips();
+}
+
+function updateHeartBtn(val) {
+  const btn = document.getElementById('heart-btn');
+  const trimmed = val.trim();
+  if (!trimmed) {
+    btn.classList.remove('visible', 'favorited');
+    return;
+  }
+  const isFav = load(K.favs).includes(trimmed);
+  btn.classList.add('visible');
+  btn.classList.toggle('favorited', isFav);
+  btn.textContent = isFav ? '❤️' : '🤍';
+}
+
+function renderFavChips() {
+  const favs    = load(K.favs);
+  const section = document.getElementById('fav-section');
+  const row     = document.getElementById('fav-chips-row');
+  if (!favs.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  row.innerHTML = favs.map(f => `
+    <div class="fav-chip" data-ex="${esc(f)}" onclick="selectFav(this.dataset.ex)">
+      <span class="fav-chip-icon">❤️</span>${esc(f)}
+    </div>
+  `).join('');
+}
+
+function selectFav(exercise) {
+  document.getElementById('w-exercise').value = exercise;
+  updateHeartBtn(exercise);
+  // 前回記録の自動入力も実行
+  const records = load(K.w).filter(r => r.exercise === exercise);
+  if (records.length) {
+    records.sort((a,b) => b.date.localeCompare(a.date));
+    const last = records[0];
+    if (last.weight) document.getElementById('w-weight').value = last.weight;
+    if (last.reps)   document.getElementById('w-reps').value   = last.reps;
+    if (last.sets)   document.getElementById('w-sets').value   = last.sets;
+    document.getElementById('autofill-hint').style.display = 'block';
+  }
+}
+
+/* ─────────────────────────────────────────
    AUTO-FILL LAST EXERCISE
 ───────────────────────────────────────── */
 function onExerciseInput(val) {
+  updateHeartBtn(val);
   if (!val.trim()) { document.getElementById('autofill-hint').style.display='none'; return; }
   const records = load(K.w).filter(r => r.exercise === val.trim());
   if (!records.length) { document.getElementById('autofill-hint').style.display='none'; return; }
