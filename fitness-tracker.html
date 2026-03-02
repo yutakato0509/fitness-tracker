@@ -459,6 +459,46 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .heart-btn.favorited { background: rgba(255,45,85,.12); border-color: #ff2d55; }
 .heart-btn:active    { transform: scale(.88); }
 
+/* ═══════════ STREAK ═══════════ */
+.streak-card {
+  background: linear-gradient(135deg, rgba(255,85,0,.1), rgba(255,45,85,.06));
+  border: 1px solid rgba(255,85,0,.2);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 14px;
+}
+.streak-card.streak-green {
+  background: linear-gradient(135deg, rgba(0,212,106,.1), rgba(0,179,89,.06));
+  border-color: rgba(0,212,106,.2);
+}
+.streak-fire { font-size: 36px; line-height: 1; flex-shrink: 0; }
+.streak-info { flex: 1; min-width: 0; }
+.streak-row { display: flex; align-items: baseline; gap: 5px; }
+.streak-num {
+  font-size: 44px; font-weight: 900; line-height: 1;
+  background: linear-gradient(135deg, #ff5500, #ff2d55);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; font-variant-numeric: tabular-nums;
+}
+.streak-card.streak-green .streak-num {
+  background: linear-gradient(135deg, #00d46a, #00b359);
+  -webkit-background-clip: text; background-clip: text;
+}
+.streak-unit { font-size: 13px; font-weight: 800; color: var(--sub); }
+.streak-msg { font-size: 12px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.4; }
+.streak-zero { opacity: .35; filter: grayscale(.5); }
+
+/* Volume badge */
+.vol-badge {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  color: var(--sub); background: rgba(255,255,255,.04);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 7px; margin-top: 5px; letter-spacing: .04em;
+}
+
+/* Body fat */
+.fat-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.fat-val { font-size: 14px; font-weight: 800; color: var(--accent2); }
+
 /* ═══════════ AUTH / SYNC ═══════════ */
 .header-right {
   display: flex; align-items: center; gap: 10px;
@@ -545,6 +585,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
      VIEW: ウエイトトレーニング
 ════════════════════════════════════════ -->
 <div id="view-weight" class="view active">
+  <div id="w-streak" class="streak-card streak-zero" style="display:none;"></div>
   <div class="card">
     <div class="card-label">Weight Training</div>
     <div class="glow-line"></div>
@@ -626,6 +667,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
      VIEW: 有酸素
 ════════════════════════════════════════ -->
 <div id="view-cardio" class="view">
+  <div id="c-streak" class="streak-card streak-green streak-zero" style="display:none;"></div>
   <div class="card">
     <div class="card-label">Cardio</div>
     <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(0,212,106,.25) 50%, transparent);"></div>
@@ -691,11 +733,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="card-label" style="color:var(--amber);">Body Weight</div>
     <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,149,0,.25) 50%, transparent);"></div>
 
-    <div class="stat-field" style="margin-bottom:12px;">
-      <label>体重</label>
-      <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1"
-             style="font-size:44px;color:var(--amber);text-align:center;">
-      <div class="stat-unit">kg</div>
+    <div class="row2" style="margin-bottom:12px;">
+      <div class="stat-field">
+        <label>体重</label>
+        <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1"
+               style="font-size:36px;color:var(--amber);text-align:center;">
+        <div class="stat-unit">kg</div>
+      </div>
+      <div class="stat-field">
+        <label>体脂肪率</label>
+        <input type="number" id="b-fat" placeholder="20.0" min="1" max="60" step="0.1"
+               style="font-size:36px;color:var(--accent2);text-align:center;">
+        <div class="stat-unit">%</div>
+      </div>
     </div>
 
     <div class="field">
@@ -874,6 +924,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderWRecent();
   renderCRecent();
   renderBRecent();
+  renderStreaks();
   initFirebase();
 });
 
@@ -959,6 +1010,7 @@ function resetCForm() {
 function resetBForm() {
   editingId.b = null;
   document.getElementById('b-weight').value = '';
+  document.getElementById('b-fat').value    = '';
   document.getElementById('b-date').value   = today();
   document.getElementById('b-edit-banner').style.display = 'none';
   document.getElementById('b-save-btn').textContent = 'REC ＋ 記録する';
@@ -996,9 +1048,10 @@ function editRecord(type, id) {
     document.getElementById('c-cancel-btn').style.display = 'block';
   } else if (type === 'b') {
     goToView('body');
-    document.getElementById('b-weight').value = data.weight || '';
-    document.getElementById('b-date').value   = data.date   || today();
-    document.getElementById('b-edit-banner').textContent = `✏️ 編集中: ${data.weight}kg`;
+    document.getElementById('b-weight').value = data.weight  || '';
+    document.getElementById('b-fat').value    = data.fatPct  || '';
+    document.getElementById('b-date').value   = data.date    || today();
+    document.getElementById('b-edit-banner').textContent = `✏️ 編集中: ${data.weight}kg${data.fatPct ? ' / '+data.fatPct+'%' : ''}`;
     document.getElementById('b-edit-banner').style.display = 'block';
     document.getElementById('b-save-btn').textContent = '✓ 更新する';
     document.getElementById('b-cancel-btn').style.display = 'block';
@@ -1117,6 +1170,7 @@ function saveWeight() {
   save(K.w, arr);
   resetWForm();
   renderWRecent();
+  renderStreaks();
 }
 
 function renderWRecent() {
@@ -1137,11 +1191,13 @@ function renderWRecent() {
          <span class="rec-num" style="font-size:20px;">${r.reps}</span><span class="rec-unit">回</span>
          <span class="rec-sep">×</span>
          <span class="rec-num" style="font-size:20px;">${r.sets}</span><span class="rec-unit">set</span>`;
+    const vol = r.weight > 0 ? r.weight * r.reps * r.sets : null;
     return `
       <div class="rec-card">
         <div class="rec-card-body">
           <div class="rec-card-name">${esc(r.exercise)}</div>
           <div class="rec-card-nums">${nums}</div>
+          ${vol ? `<div><span class="vol-badge">VOL ${vol.toLocaleString()}kg</span></div>` : ''}
           ${r.memo ? `<div class="rec-memo">📝 ${esc(r.memo)}</div>` : ''}
         </div>
         <div class="rec-card-right">
@@ -1179,6 +1235,7 @@ function saveCardio() {
   save(K.c, arr);
   resetCForm();
   renderCRecent();
+  renderStreaks();
 }
 
 function renderCRecent() {
@@ -1213,18 +1270,20 @@ function renderCRecent() {
 ───────────────────────────────────────── */
 function saveBody() {
   const weight = parseFloat(document.getElementById('b-weight').value);
+  const fatPct = parseFloat(document.getElementById('b-fat').value);
   const date   = document.getElementById('b-date').value;
 
   if (!date)               { alert('日付を入力してください'); return; }
   if (isNaN(weight)||weight<=0) { alert('体重を入力してください'); return; }
 
+  const fat = isNaN(fatPct) ? null : fatPct;
   const arr = load(K.b);
   if (editingId.b) {
     const idx = arr.findIndex(r => r.id === editingId.b);
-    if (idx !== -1) arr[idx] = { ...arr[idx], weight, date };
+    if (idx !== -1) arr[idx] = { ...arr[idx], weight, date, fatPct: fat };
     toast('✅ 更新しました！');
   } else {
-    arr.push({ id: uid(), date, weight });
+    arr.push({ id: uid(), date, weight, fatPct: fat });
     toast('🔥 記録しました！');
   }
   save(K.b, arr);
@@ -1256,6 +1315,9 @@ function renderBRecent() {
         <span class="bw-kg">kg</span>
         ${diffHTML}
       </div>
+      <div class="fat-row">
+        ${cur.fatPct != null ? `<span class="fat-val">体脂肪 ${cur.fatPct}%</span>` : ''}
+      </div>
       <div class="bw-date">${fmtDateFull(cur.date)}</div>`;
   } else {
     lc.style.display = 'none';
@@ -1270,6 +1332,7 @@ function renderBRecent() {
         <div class="rec-card-nums">
           <span class="rec-num" style="font-size:32px;color:var(--amber);">${r.weight}</span>
           <span class="rec-unit" style="font-size:14px;">kg</span>
+          ${r.fatPct != null ? `<span class="rec-sep">·</span><span class="rec-num" style="font-size:22px;color:var(--accent2);">${r.fatPct}</span><span class="rec-unit">%</span>` : ''}
         </div>
       </div>
       <div class="rec-card-right">
@@ -1358,7 +1421,7 @@ function histItem(r) {
       <div class="rec-icon ic-b">⚖️</div>
       <div class="rec-body">
         <div class="rec-title">体重</div>
-        <div class="rec-detail">${r.weight} kg</div>
+        <div class="rec-detail">${r.weight} kg${r.fatPct != null ? ` · 体脂肪 ${r.fatPct}%` : ''}</div>
       </div>
       <div class="rec-right">${actionBtns}</div>
     </div>`;
@@ -1522,6 +1585,60 @@ function emptyHTML(icon, msg) {
 function esc(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─────────────────────────────────────────
+   STREAK
+───────────────────────────────────────── */
+function prevDay(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d - 1, 12)).toISOString().slice(0, 10);
+}
+
+function calcStreak(records) {
+  const dates = [...new Set(records.map(r => r.date))].sort((a, b) => b.localeCompare(a));
+  if (!dates.length) return 0;
+  const t = today(), yest = prevDay(t);
+  if (dates[0] !== t && dates[0] !== yest) return 0;
+  let streak = 0, expected = dates[0];
+  for (const date of dates) {
+    if (date === expected) { streak++; expected = prevDay(expected); }
+    else break;
+  }
+  return streak;
+}
+
+function streakMsg(n, type) {
+  const label = type === 'w' ? 'ウエイト' : '有酸素';
+  if (n === 0)  return `今日 ${label} を記録して始めよう！`;
+  if (n === 1)  return 'スタート！継続が力だ 💪';
+  if (n < 4)    return `${n}日連続！いい調子！`;
+  if (n < 7)    return `${n}日連続！習慣になってきた 🔥`;
+  if (n < 14)   return `${n}日連続！本物の習慣 🔥🔥`;
+  if (n < 30)   return `${n}日連続！マジで尊敬 🔥🔥🔥`;
+  return `${n}日連続！！もはや伝説 🏆`;
+}
+
+function renderStreaks() {
+  [
+    { id: 'w-streak', records: load(K.w), type: 'w', label: 'DAY STREAK', fire: '🔥' },
+    { id: 'c-streak', records: load(K.c), type: 'c', label: 'DAY STREAK', fire: '🏃' },
+  ].forEach(({ id, records, type, label, fire }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const n = calcStreak(records);
+    el.style.display = 'flex';
+    el.classList.toggle('streak-zero', n === 0);
+    el.innerHTML = `
+      <div class="streak-fire">${n > 0 ? fire : '💤'}</div>
+      <div class="streak-info">
+        <div class="streak-row">
+          <span class="streak-num">${n}</span>
+          <span class="streak-unit">${label}</span>
+        </div>
+        <div class="streak-msg">${streakMsg(n, type)}</div>
+      </div>`;
+  });
 }
 
 /* ─────────────────────────────────────────
