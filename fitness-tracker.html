@@ -360,6 +360,51 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   background: linear-gradient(90deg, transparent, rgba(255,85,0,.3) 40%, rgba(255,45,85,.3) 60%, transparent);
 }
 
+/* ═══════════ EDIT MODE ═══════════ */
+.edit-banner {
+  background: rgba(255,85,0,.08);
+  border: 1px solid rgba(255,85,0,.3);
+  border-radius: 11px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 12px; font-weight: 800; color: var(--accent);
+  letter-spacing: .03em; line-height: 1.4;
+}
+.btn-cancel {
+  width: 100%; padding: 13px; margin-top: 8px;
+  background: var(--card2); border: 1.5px solid var(--border);
+  border-radius: 14px; color: var(--sub);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .18s; -webkit-appearance: none; font-family: inherit;
+}
+.btn-cancel:active { background: rgba(255,59,48,.1); border-color: var(--red); color: var(--red); }
+
+/* ═══════════ SORT ═══════════ */
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 8px 2px 12px;
+}
+.section-header .section-title { margin: 0; }
+.sort-group { display: flex; gap: 4px; }
+.sort-btn {
+  padding: 5px 9px; border-radius: 7px;
+  border: 1px solid var(--border); font-size: 10px; font-weight: 800;
+  cursor: pointer; white-space: nowrap; background: transparent; color: var(--sub);
+  transition: all .18s; font-family: inherit; letter-spacing: .02em;
+  -webkit-appearance: none;
+}
+.sort-btn.active { background: rgba(255,85,0,.12); border-color: var(--accent); color: var(--accent); }
+
+/* ═══════════ EDIT BUTTON ═══════════ */
+.rec-actions { display: flex; gap: 5px; }
+.btn-edit {
+  background: rgba(255,85,0,.08); border: 1px solid rgba(255,85,0,.2);
+  color: var(--accent); font-size: 11px; padding: 7px 11px; border-radius: 8px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  cursor: pointer; -webkit-appearance: none; font-family: inherit; transition: background .15s;
+}
+.btn-edit:active { background: rgba(255,85,0,.2); }
+
 /* ═══════════ FAVORITES ═══════════ */
 .fav-section {
   margin-bottom: 14px;
@@ -493,10 +538,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <textarea id="w-memo" placeholder="フォームの調子、気づきなど..."></textarea>
     </div>
 
-    <button class="btn btn-primary" onclick="saveWeight()">REC ＋ 記録する</button>
+    <div id="w-edit-banner" class="edit-banner" style="display:none;"></div>
+    <button class="btn btn-primary" id="w-save-btn" onclick="saveWeight()">REC ＋ 記録する</button>
+    <button class="btn btn-cancel" id="w-cancel-btn" onclick="cancelEdit('w')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div class="section-title">最近のログ</div>
+  <div class="section-header">
+    <div class="section-title">最近のログ</div>
+    <div class="sort-group" id="w-sort-group">
+      <button class="sort-btn active" onclick="setSortW('default',this)">入力順</button>
+      <button class="sort-btn" onclick="setSortW('desc',this)">新しい順</button>
+      <button class="sort-btn" onclick="setSortW('asc',this)">古い順</button>
+    </div>
+  </div>
   <div id="w-recent"></div>
 </div>
 
@@ -539,10 +593,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <input type="date" id="c-date">
     </div>
 
-    <button class="btn btn-green" onclick="saveCardio()">REC ＋ 記録する</button>
+    <div id="c-edit-banner" class="edit-banner" style="display:none;"></div>
+    <button class="btn btn-green" id="c-save-btn" onclick="saveCardio()">REC ＋ 記録する</button>
+    <button class="btn btn-cancel" id="c-cancel-btn" onclick="cancelEdit('c')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div class="section-title">最近のログ</div>
+  <div class="section-header">
+    <div class="section-title">最近のログ</div>
+    <div class="sort-group" id="c-sort-group">
+      <button class="sort-btn active" onclick="setSortC('default',this)">入力順</button>
+      <button class="sort-btn" onclick="setSortC('desc',this)">新しい順</button>
+      <button class="sort-btn" onclick="setSortC('asc',this)">古い順</button>
+    </div>
+  </div>
   <div id="c-recent"></div>
 </div>
 
@@ -572,10 +635,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <input type="date" id="b-date">
     </div>
 
-    <button class="btn btn-amber" onclick="saveBody()">REC ＋ 記録する</button>
+    <div id="b-edit-banner" class="edit-banner" style="display:none;"></div>
+    <button class="btn btn-amber" id="b-save-btn" onclick="saveBody()">REC ＋ 記録する</button>
+    <button class="btn btn-cancel" id="b-cancel-btn" onclick="cancelEdit('b')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div class="section-title">最近のログ</div>
+  <div class="section-header">
+    <div class="section-title">最近のログ</div>
+    <div class="sort-group" id="b-sort-group">
+      <button class="sort-btn active" onclick="setSortB('default',this)">入力順</button>
+      <button class="sort-btn" onclick="setSortB('desc',this)">新しい順</button>
+      <button class="sort-btn" onclick="setSortB('asc',this)">古い順</button>
+    </div>
+  </div>
   <div id="b-recent"></div>
 </div>
 
@@ -588,6 +660,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="chip" onclick="setFilter('weight',this)">💪 ウエイト</div>
     <div class="chip" onclick="setFilter('cardio',this)">🏃 有酸素</div>
     <div class="chip" onclick="setFilter('body',this)">⚖️ 体重</div>
+  </div>
+  <div class="sort-group" id="hist-sort-group" style="margin-bottom:14px;">
+    <button class="sort-btn" onclick="setSortHist('default',this)">入力順</button>
+    <button class="sort-btn active" onclick="setSortHist('desc',this)">新しい順</button>
+    <button class="sort-btn" onclick="setSortHist('asc',this)">古い順</button>
   </div>
   <div id="hist-list"></div>
 </div>
@@ -723,14 +800,133 @@ window.addEventListener('DOMContentLoaded', () => {
 let curFilter = 'all';
 let bwChart = null, exChart = null;
 
-function nav(view, el) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('view-' + view).classList.add('active');
-  el.classList.add('active');
+// 編集中のレコードID（null = 新規モード）
+let editingId = { w: null, c: null, b: null };
 
+// 並び替え状態（'default'=入力順, 'desc'=新しい順, 'asc'=古い順）
+let sortOrder = { w: 'default', c: 'default', b: 'default', hist: 'desc' };
+
+// 指定ビューに切り替える（ナビアイコンのactive状態も同期）
+function goToView(view) {
+  const VIEWS = ['weight','cardio','body','history','graph'];
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', VIEWS[i] === view));
+  document.getElementById('view-' + view).classList.add('active');
+}
+
+function nav(view, el) {
+  goToView(view);
   if (view === 'history') renderHistory();
   if (view === 'graph')   { fillExSel(); setTimeout(drawBwChart, 80); }
+}
+
+// ─── ソート適用 ───────────────────────────
+function applySort(arr, order) {
+  const copy = arr.slice();
+  if (order === 'desc')    copy.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  else if (order === 'asc') copy.sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  // 'default' = 配列の挿入順（ソートなし）
+  return copy;
+}
+function setSortW(order, el) {
+  sortOrder.w = order;
+  document.querySelectorAll('#w-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); renderWRecent();
+}
+function setSortC(order, el) {
+  sortOrder.c = order;
+  document.querySelectorAll('#c-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); renderCRecent();
+}
+function setSortB(order, el) {
+  sortOrder.b = order;
+  document.querySelectorAll('#b-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); renderBRecent();
+}
+function setSortHist(order, el) {
+  sortOrder.hist = order;
+  document.querySelectorAll('#hist-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); renderHistory();
+}
+
+// ─── フォームリセット ───────────────────────
+function resetWForm() {
+  editingId.w = null;
+  document.getElementById('w-exercise').value = '';
+  document.getElementById('w-weight').value   = '';
+  document.getElementById('w-reps').value     = '';
+  document.getElementById('w-sets').value     = '';
+  document.getElementById('w-date').value     = today();
+  document.getElementById('w-memo').value     = '';
+  document.getElementById('autofill-hint').style.display = 'none';
+  updateHeartBtn('');
+  document.getElementById('w-edit-banner').style.display = 'none';
+  document.getElementById('w-save-btn').textContent = 'REC ＋ 記録する';
+  document.getElementById('w-cancel-btn').style.display = 'none';
+}
+function resetCForm() {
+  editingId.c = null;
+  document.getElementById('c-duration').value = '';
+  document.getElementById('c-distance').value = '';
+  document.getElementById('c-date').value     = today();
+  document.getElementById('c-edit-banner').style.display = 'none';
+  document.getElementById('c-save-btn').textContent = 'REC ＋ 記録する';
+  document.getElementById('c-cancel-btn').style.display = 'none';
+}
+function resetBForm() {
+  editingId.b = null;
+  document.getElementById('b-weight').value = '';
+  document.getElementById('b-date').value   = today();
+  document.getElementById('b-edit-banner').style.display = 'none';
+  document.getElementById('b-save-btn').textContent = 'REC ＋ 記録する';
+  document.getElementById('b-cancel-btn').style.display = 'none';
+}
+
+// ─── 編集モード開始 ────────────────────────
+function editRecord(type, id) {
+  const data = load(K[type]).find(r => r.id === id);
+  if (!data) return;
+  editingId[type] = id;
+
+  if (type === 'w') {
+    goToView('weight');
+    document.getElementById('w-exercise').value = data.exercise || '';
+    document.getElementById('w-weight').value   = data.weight   || '';
+    document.getElementById('w-reps').value     = data.reps     || '';
+    document.getElementById('w-sets').value     = data.sets     || '';
+    document.getElementById('w-date').value     = data.date     || today();
+    document.getElementById('w-memo').value     = data.memo     || '';
+    updateHeartBtn(data.exercise || '');
+    document.getElementById('w-edit-banner').textContent = `✏️ 編集中: ${data.exercise}`;
+    document.getElementById('w-edit-banner').style.display = 'block';
+    document.getElementById('w-save-btn').textContent = '✓ 更新する';
+    document.getElementById('w-cancel-btn').style.display = 'block';
+  } else if (type === 'c') {
+    goToView('cardio');
+    document.getElementById('c-type').value     = data.type     || 'ランニング';
+    document.getElementById('c-duration').value = data.duration || '';
+    document.getElementById('c-distance').value = data.distance || '';
+    document.getElementById('c-date').value     = data.date     || today();
+    document.getElementById('c-edit-banner').textContent = `✏️ 編集中: ${data.type} ${data.duration}分`;
+    document.getElementById('c-edit-banner').style.display = 'block';
+    document.getElementById('c-save-btn').textContent = '✓ 更新する';
+    document.getElementById('c-cancel-btn').style.display = 'block';
+  } else if (type === 'b') {
+    goToView('body');
+    document.getElementById('b-weight').value = data.weight || '';
+    document.getElementById('b-date').value   = data.date   || today();
+    document.getElementById('b-edit-banner').textContent = `✏️ 編集中: ${data.weight}kg`;
+    document.getElementById('b-edit-banner').style.display = 'block';
+    document.getElementById('b-save-btn').textContent = '✓ 更新する';
+    document.getElementById('b-cancel-btn').style.display = 'block';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit(type) {
+  if (type === 'w')      resetWForm();
+  else if (type === 'c') resetCForm();
+  else if (type === 'b') resetBForm();
 }
 
 /* ─────────────────────────────────────────
@@ -827,23 +1023,21 @@ function saveWeight() {
   if (!sets || sets < 1) { alert('セット数を入力してください'); return; }
 
   const arr = load(K.w);
-  arr.push({ id: uid(), date, exercise, weight: isNaN(weight) ? 0 : weight, reps, sets, memo });
+  if (editingId.w) {
+    const idx = arr.findIndex(r => r.id === editingId.w);
+    if (idx !== -1) arr[idx] = { ...arr[idx], exercise, weight: isNaN(weight) ? 0 : weight, reps, sets, date, memo };
+    toast('✅ 更新しました！');
+  } else {
+    arr.push({ id: uid(), date, exercise, weight: isNaN(weight) ? 0 : weight, reps, sets, memo });
+    toast('🔥 記録しました！');
+  }
   save(K.w, arr);
-
-  document.getElementById('w-exercise').value = '';
-  document.getElementById('w-weight').value   = '';
-  document.getElementById('w-reps').value     = '';
-  document.getElementById('w-sets').value     = '';
-  document.getElementById('w-memo').value     = '';
-  document.getElementById('w-date').value     = today();
-  document.getElementById('autofill-hint').style.display = 'none';
-
-  toast('🔥 記録しました！');
+  resetWForm();
   renderWRecent();
 }
 
 function renderWRecent() {
-  const recs = load(K.w).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  const recs = applySort(load(K.w), sortOrder.w).slice(0, 15);
   const el   = document.getElementById('w-recent');
   if (!recs.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
 
@@ -869,7 +1063,10 @@ function renderWRecent() {
         </div>
         <div class="rec-card-right">
           <div class="rec-date">${fmtDateFull(r.date)}</div>
-          <button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',renderWRecent)">DEL</button>
+          <div class="rec-actions">
+            <button class="btn-edit" onclick="editRecord('w','${r.id}')">編集</button>
+            <button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',renderWRecent)">DEL</button>
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -888,19 +1085,21 @@ function saveCardio() {
   if (!duration || duration<1) { alert('時間を入力してください'); return; }
 
   const arr = load(K.c);
-  arr.push({ id: uid(), date, type, duration, distance: isNaN(distance) ? 0 : distance });
+  if (editingId.c) {
+    const idx = arr.findIndex(r => r.id === editingId.c);
+    if (idx !== -1) arr[idx] = { ...arr[idx], type, duration, distance: isNaN(distance) ? 0 : distance, date };
+    toast('✅ 更新しました！');
+  } else {
+    arr.push({ id: uid(), date, type, duration, distance: isNaN(distance) ? 0 : distance });
+    toast('🔥 記録しました！');
+  }
   save(K.c, arr);
-
-  document.getElementById('c-duration').value = '';
-  document.getElementById('c-distance').value = '';
-  document.getElementById('c-date').value     = today();
-
-  toast('🔥 記録しました！');
+  resetCForm();
   renderCRecent();
 }
 
 function renderCRecent() {
-  const recs = load(K.c).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  const recs = applySort(load(K.c), sortOrder.c).slice(0, 15);
   const el   = document.getElementById('c-recent');
   if (!recs.length) { el.innerHTML = emptyHTML('🏃','NO RECORDS YET'); return; }
 
@@ -917,7 +1116,10 @@ function renderCRecent() {
       </div>
       <div class="rec-card-right">
         <div class="rec-date">${fmtDateFull(r.date)}</div>
-        <button class="btn btn-ghost" onclick="delRec('${K.c}','${r.id}',renderCRecent)">DEL</button>
+        <div class="rec-actions">
+          <button class="btn-edit" onclick="editRecord('c','${r.id}')">編集</button>
+          <button class="btn btn-ghost" onclick="delRec('${K.c}','${r.id}',renderCRecent)">DEL</button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -934,19 +1136,22 @@ function saveBody() {
   if (isNaN(weight)||weight<=0) { alert('体重を入力してください'); return; }
 
   const arr = load(K.b);
-  arr.push({ id: uid(), date, weight });
+  if (editingId.b) {
+    const idx = arr.findIndex(r => r.id === editingId.b);
+    if (idx !== -1) arr[idx] = { ...arr[idx], weight, date };
+    toast('✅ 更新しました！');
+  } else {
+    arr.push({ id: uid(), date, weight });
+    toast('🔥 記録しました！');
+  }
   save(K.b, arr);
-
-  document.getElementById('b-weight').value = '';
-  document.getElementById('b-date').value   = today();
-
-  toast('🔥 記録しました！');
+  resetBForm();
   renderBRecent();
 }
 
 function renderBRecent() {
-  const all  = load(K.b).sort((a,b)=>b.date.localeCompare(a.date));
-  const recs = all.slice(0,15);
+  const all  = load(K.b).sort((a,b)=>b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const recs = applySort(load(K.b), sortOrder.b).slice(0, 15);
 
   const lc = document.getElementById('bw-latest-card');
   const ld = document.getElementById('bw-latest');
@@ -986,7 +1191,10 @@ function renderBRecent() {
       </div>
       <div class="rec-card-right">
         <div class="rec-date">${fmtDateFull(r.date)}</div>
-        <button class="btn btn-ghost" onclick="delRec('${K.b}','${r.id}',renderBRecent)">DEL</button>
+        <div class="rec-actions">
+          <button class="btn-edit" onclick="editRecord('b','${r.id}')">編集</button>
+          <button class="btn btn-ghost" onclick="delRec('${K.b}','${r.id}',renderBRecent)">DEL</button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -1008,14 +1216,19 @@ function renderHistory() {
   const bodies  = load(K.b).map(r=>({...r,_t:'body'}));
 
   let all = { all:[...weights,...cardios,...bodies], weight:weights, cardio:cardios, body:bodies }[curFilter];
-  all.sort((a,b)=>b.date.localeCompare(a.date));
+
+  // 入力順 = id（作成時刻）降順、新しい順/古い順 = date基準
+  if      (sortOrder.hist === 'default') all.sort((a,b) => b.id.localeCompare(a.id));
+  else if (sortOrder.hist === 'desc')    all.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  else if (sortOrder.hist === 'asc')     all.sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
 
   const el = document.getElementById('hist-list');
   if (!all.length) { el.innerHTML = emptyHTML('📋','NO RECORDS YET'); return; }
 
   const grouped = {};
   all.forEach(r => { (grouped[r.date] = grouped[r.date]||[]).push(r); });
-  const dates = Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+  // 日付グループの順序はソート済みallの出現順を維持
+  const dates = [...new Set(all.map(r => r.date))];
 
   el.innerHTML = dates.map(date => `
     <div style="margin-bottom:14px;">
@@ -1028,7 +1241,13 @@ function renderHistory() {
 }
 
 function histItem(r) {
-  const delKey = r._t==='weight' ? K.w : r._t==='cardio' ? K.c : K.b;
+  const delKey  = r._t==='weight' ? K.w : r._t==='cardio' ? K.c : K.b;
+  const editType = r._t==='weight' ? 'w'  : r._t==='cardio' ? 'c'  : 'b';
+  const actionBtns = `
+    <div class="rec-actions">
+      <button class="btn-edit" onclick="editRecord('${editType}','${r.id}')">編集</button>
+      <button class="btn btn-ghost" onclick="delRec('${delKey}','${r.id}',renderHistory)">DEL</button>
+    </div>`;
 
   if (r._t === 'weight') return `
     <div class="rec-item">
@@ -1038,9 +1257,7 @@ function histItem(r) {
         <div class="rec-detail">${r.weight > 0 ? r.weight+'kg × ' : '自重 × '}${r.reps}回 × ${r.sets}セット</div>
         ${r.memo ? `<div class="rec-detail">📝 ${esc(r.memo)}</div>` : ''}
       </div>
-      <div class="rec-right">
-        <button class="btn btn-ghost" onclick="delRec('${delKey}','${r.id}',renderHistory)">DEL</button>
-      </div>
+      <div class="rec-right">${actionBtns}</div>
     </div>`;
 
   if (r._t === 'cardio') return `
@@ -1050,9 +1267,7 @@ function histItem(r) {
         <div class="rec-title">${esc(r.type)}</div>
         <div class="rec-detail">${r.duration}分${r.distance > 0 ? ' · '+r.distance+'km' : ''}</div>
       </div>
-      <div class="rec-right">
-        <button class="btn btn-ghost" onclick="delRec('${delKey}','${r.id}',renderHistory)">DEL</button>
-      </div>
+      <div class="rec-right">${actionBtns}</div>
     </div>`;
 
   return `
@@ -1062,9 +1277,7 @@ function histItem(r) {
         <div class="rec-title">体重</div>
         <div class="rec-detail">${r.weight} kg</div>
       </div>
-      <div class="rec-right">
-        <button class="btn btn-ghost" onclick="delRec('${delKey}','${r.id}',renderHistory)">DEL</button>
-      </div>
+      <div class="rec-right">${actionBtns}</div>
     </div>`;
 }
 
