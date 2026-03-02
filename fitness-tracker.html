@@ -1946,8 +1946,8 @@ function initFirebase() {
   if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // 未設定ならスキップ
   firebase.initializeApp(FIREBASE_CONFIG);
   fbAuth = firebase.auth();
-  fbDb      = firebase.firestore();
-  fbStorage = firebase.storage();
+  fbDb = firebase.firestore();
+  try { fbStorage = firebase.storage(); } catch(e) { console.warn('Storage not ready:', e); }
   // オフライン永続化（圏外でも記録でき、復帰時に自動同期）
   fbDb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
   // 認証状態の変化を監視
