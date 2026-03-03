@@ -887,6 +887,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <input type="date" id="c-date">
     </div>
 
+    <div class="field">
+      <label>メモ (任意)</label>
+      <textarea id="c-memo" placeholder="コース、体感など..."></textarea>
+    </div>
+
     <div id="c-edit-banner" class="edit-banner" style="display:none;"></div>
     <button class="btn btn-green" id="c-save-btn" onclick="saveCardio()">REC ＋ 記録する</button>
     <button class="btn btn-cancel" id="c-cancel-btn" onclick="cancelEdit('c')" style="display:none;">✕ キャンセル</button>
@@ -942,6 +947,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="btn btn-cancel" id="b-cancel-btn" onclick="cancelEdit('b')" style="display:none;">✕ キャンセル</button>
   </div>
 
+  <div id="b-week-summary"></div>
+
   <div class="section-header">
     <div class="section-title">最近のログ</div>
     <div class="sort-group" id="b-sort-group">
@@ -957,11 +964,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
      VIEW: 履歴
 ════════════════════════════════════════ -->
 <div id="view-history" class="view">
-  <div class="chips">
-    <div class="chip active" onclick="setFilter('all',this)">ALL</div>
-    <div class="chip" onclick="setFilter('weight',this)">💪 ウエイト</div>
-    <div class="chip" onclick="setFilter('cardio',this)">🏃 有酸素</div>
-    <div class="chip" onclick="setFilter('body',this)">⚖️ 体重</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <div class="chips" style="margin-bottom:0;flex:1;">
+      <div class="chip active" onclick="setFilter('all',this)">ALL</div>
+      <div class="chip" onclick="setFilter('weight',this)">💪 ウエイト</div>
+      <div class="chip" onclick="setFilter('cardio',this)">🏃 有酸素</div>
+      <div class="chip" onclick="setFilter('body',this)">⚖️ 体重</div>
+    </div>
+    <button class="btn-ghost" onclick="exportCSV()" style="flex-shrink:0;margin-left:8px;margin-bottom:8px;">⬇ CSV</button>
   </div>
   <div class="sort-group" id="hist-sort-group" style="margin-bottom:14px;">
     <button class="sort-btn" onclick="setSortHist('default',this)">入力順</button>
@@ -978,6 +988,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   <div class="tab-bar">
     <button class="tab-btn active" onclick="gTab('bw',this)">体重推移</button>
     <button class="tab-btn" onclick="gTab('ex',this)">種目推移</button>
+    <button class="tab-btn" onclick="gTab('cardio',this)">有酸素</button>
   </div>
 
   <div id="g-bw">
@@ -1014,6 +1025,25 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="glow-line"></div>
       <div class="chart-wrap" id="ex-chart-wrap">
         <canvas id="ex-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="g-cardio" style="display:none;">
+    <div class="card">
+      <div class="card-label" style="color:var(--green);">Cardio Trend</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(0,212,106,.2) 50%,transparent);"></div>
+      <div class="tab-bar" style="margin-bottom:12px;">
+        <button class="tab-btn active" id="cardio-metric-dist" onclick="setCardioMetric('distance',this)">距離 (km)</button>
+        <button class="tab-btn" id="cardio-metric-dur" onclick="setCardioMetric('duration',this)">時間 (分)</button>
+      </div>
+      <div class="period-group">
+        <button class="period-btn" onclick="setPeriodCardio('1m',this)">1ヶ月</button>
+        <button class="period-btn" onclick="setPeriodCardio('3m',this)">3ヶ月</button>
+        <button class="period-btn active" onclick="setPeriodCardio('all',this)">全期間</button>
+      </div>
+      <div class="chart-wrap" id="cardio-chart-wrap">
+        <canvas id="cardio-chart"></canvas>
       </div>
     </div>
   </div>
@@ -1172,8 +1202,9 @@ window.addEventListener('DOMContentLoaded', () => {
    NAVIGATION
 ───────────────────────────────────────── */
 let curFilter = 'all';
-let bwChart = null, exChart = null;
-let graphPeriod = { bw: 'all', ex: 'all' };
+let bwChart = null, exChart = null, cardioChart = null;
+let graphPeriod = { bw: 'all', ex: 'all', cardio: 'all' };
+let cardioMetric = 'distance';
 let showLimit = { w: 15, c: 15, b: 15 };
 let _deletedRecord = null, _deleteTimer = null, _toastTimer = null;
 
@@ -1248,6 +1279,7 @@ function resetCForm() {
   document.getElementById('c-duration').value = '';
   document.getElementById('c-distance').value = '';
   document.getElementById('c-date').value     = today();
+  document.getElementById('c-memo').value     = '';
   document.getElementById('c-edit-banner').style.display = 'none';
   document.getElementById('c-save-btn').textContent = 'REC ＋ 記録する';
   document.getElementById('c-cancel-btn').style.display = 'none';
@@ -1294,6 +1326,7 @@ function editRecord(type, id) {
     document.getElementById('c-duration').value = data.duration || '';
     document.getElementById('c-distance').value = data.distance || '';
     document.getElementById('c-date').value     = data.date     || today();
+    document.getElementById('c-memo').value     = data.memo     || '';
     document.getElementById('c-edit-banner').textContent = `✏️ 編集中: ${data.type} ${data.duration}分`;
     document.getElementById('c-edit-banner').style.display = 'block';
     document.getElementById('c-save-btn').textContent = '✓ 更新する';
@@ -1489,6 +1522,7 @@ function saveCardio() {
   const duration = parseInt(document.getElementById('c-duration').value);
   const distance = parseFloat(document.getElementById('c-distance').value);
   const date     = document.getElementById('c-date').value;
+  const memo     = document.getElementById('c-memo').value.trim();
 
   if (!date)                   { alert('日付を入力してください'); return; }
   if (!duration || duration<1) { alert('時間を入力してください'); return; }
@@ -1496,10 +1530,10 @@ function saveCardio() {
   const arr = load(K.c);
   if (editingId.c) {
     const idx = arr.findIndex(r => r.id === editingId.c);
-    if (idx !== -1) arr[idx] = { ...arr[idx], type, duration, distance: isNaN(distance) ? 0 : distance, date };
+    if (idx !== -1) arr[idx] = { ...arr[idx], type, duration, distance: isNaN(distance) ? 0 : distance, date, memo };
     toast('✅ 更新しました！');
   } else {
-    arr.push({ id: uid(), date, type, duration, distance: isNaN(distance) ? 0 : distance });
+    arr.push({ id: uid(), date, type, duration, distance: isNaN(distance) ? 0 : distance, memo });
     toast('🔥 記録しました！');
   }
   save(K.c, arr);
@@ -1525,6 +1559,7 @@ function renderCRecent() {
             ? `<span class="rec-sep">·</span><span class="rec-num rec-num-g">${r.distance}</span><span class="rec-unit">km</span>`
             : ''}
         </div>
+        ${r.memo ? `<div class="rec-memo">📝 ${esc(r.memo)}</div>` : ''}
       </div>
       <div class="rec-card-right">
         <div class="rec-date">${fmtDateFull(r.date)}</div>
@@ -1564,6 +1599,7 @@ function saveBody() {
   showLimit.b = 15;
   resetBForm();
   renderBRecent();
+  renderHome();
 }
 
 function renderBRecent() {
@@ -1598,6 +1634,8 @@ function renderBRecent() {
   } else {
     lc.style.display = 'none';
   }
+
+  renderBodyWeekSummary();
 
   const el = document.getElementById('b-recent');
   if (!recs.length) { el.innerHTML = emptyHTML('⚖️','NO RECORDS YET'); return; }
@@ -1673,16 +1711,25 @@ function histItem(r) {
       <button class="btn btn-ghost" onclick="delRec('${delKey}','${r.id}',renderHistory)">DEL</button>
     </div>`;
 
-  if (r._t === 'weight') return `
+  if (r._t === 'weight') {
+    let detail;
+    if (r.setData && r.setData.length) {
+      const maxW = Math.max(...r.setData.map(s => s.weight || 0));
+      detail = r.setData.map((s,i) => `${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回`).join(' / ');
+    } else {
+      detail = `${r.weight > 0 ? r.weight+'kg × ' : '自重 × '}${r.reps}回 × ${r.sets}セット`;
+    }
+    return `
     <div class="rec-item">
       <div class="rec-icon ic-w">💪</div>
       <div class="rec-body">
         <div class="rec-title">${esc(r.exercise)}</div>
-        <div class="rec-detail">${r.weight > 0 ? r.weight+'kg × ' : '自重 × '}${r.reps}回 × ${r.sets}セット</div>
+        <div class="rec-detail">${detail}</div>
         ${r.memo ? `<div class="rec-detail">📝 ${esc(r.memo)}</div>` : ''}
       </div>
       <div class="rec-right">${actionBtns}</div>
     </div>`;
+  }
 
   if (r._t === 'cardio') return `
     <div class="rec-item">
@@ -1690,6 +1737,7 @@ function histItem(r) {
       <div class="rec-body">
         <div class="rec-title">${esc(r.type)}</div>
         <div class="rec-detail">${r.duration}分${r.distance > 0 ? ' · '+r.distance+'km' : ''}</div>
+        ${r.memo ? `<div class="rec-detail">📝 ${esc(r.memo)}</div>` : ''}
       </div>
       <div class="rec-right">${actionBtns}</div>
     </div>`;
@@ -1735,12 +1783,14 @@ function setPeriodEx(p, el) {
 }
 
 function gTab(tab, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#view-graph > .tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('g-bw').style.display = tab==='bw' ? 'block' : 'none';
-  document.getElementById('g-ex').style.display = tab==='ex' ? 'block' : 'none';
-  if (tab==='bw') setTimeout(drawBwChart, 60);
-  if (tab==='ex') fillExSel();
+  document.getElementById('g-bw').style.display     = tab==='bw'     ? 'block' : 'none';
+  document.getElementById('g-ex').style.display     = tab==='ex'     ? 'block' : 'none';
+  document.getElementById('g-cardio').style.display = tab==='cardio' ? 'block' : 'none';
+  if (tab==='bw')     setTimeout(drawBwChart, 60);
+  if (tab==='ex')     fillExSel();
+  if (tab==='cardio') setTimeout(drawCardioChart, 60);
 }
 
 function resetChartWrap(wrapId, canvasId) {
@@ -1865,7 +1915,8 @@ function drawExChart() {
   const recs = filterByPeriod(all, graphPeriod.ex);
   const byDate = {};
   recs.forEach(r => {
-    if (!byDate[r.date] || r.weight > byDate[r.date]) byDate[r.date] = r.weight;
+    const maxW = r.setData ? Math.max(...r.setData.map(s => s.weight || 0)) : (r.weight || 0);
+    if (!byDate[r.date] || maxW > byDate[r.date]) byDate[r.date] = maxW;
   });
   const dates  = Object.keys(byDate).sort((a,b)=>a.localeCompare(b));
   const canvas = resetChartWrap('ex-chart-wrap','ex-chart');
@@ -1899,6 +1950,142 @@ function drawExChart() {
     },
     options: chartOpts('kg')
   });
+}
+
+/* ─────────────────────────────────────────
+   CARDIO GRAPH
+───────────────────────────────────────── */
+function setCardioMetric(metric, el) {
+  cardioMetric = metric;
+  document.querySelectorAll('#g-cardio .tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  drawCardioChart();
+}
+function setPeriodCardio(p, el) {
+  graphPeriod.cardio = p;
+  document.querySelectorAll('#g-cardio .period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  drawCardioChart();
+}
+function drawCardioChart() {
+  if (cardioChart) { cardioChart.destroy(); cardioChart = null; }
+  const all  = load(K.c).sort((a,b) => a.date.localeCompare(b.date));
+  const recs = filterByPeriod(all, graphPeriod.cardio)
+    .filter(r => cardioMetric === 'distance' ? r.distance > 0 : r.duration > 0);
+  const canvas = resetChartWrap('cardio-chart-wrap','cardio-chart');
+
+  if (!recs.length) {
+    document.getElementById('cardio-chart-wrap').innerHTML =
+      `<div class="chart-empty"><span class="ei">🏃</span><p>CARDIO RECORDS NEEDED</p></div>`;
+    return;
+  }
+
+  const isDistance = cardioMetric === 'distance';
+  const color = '#00d46a';
+  cardioChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: recs.map(r => fmtDateShort(r.date)),
+      datasets: [{
+        label: isDistance ? '距離(km)' : '時間(分)',
+        data:  recs.map(r => isDistance ? r.distance : r.duration),
+        borderColor: color,
+        backgroundColor: ctx => {
+          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
+          g.addColorStop(0, 'rgba(0,212,106,.25)'); g.addColorStop(1, 'rgba(0,212,106,.01)');
+          return g;
+        },
+        fill: true, tension: 0.4,
+        pointBackgroundColor: color, pointBorderColor: '#080808', pointBorderWidth: 2,
+        pointRadius: 5, pointHoverRadius: 8, borderWidth: 2.5,
+      }]
+    },
+    options: chartOpts(isDistance ? 'km' : '分')
+  });
+}
+
+/* ─────────────────────────────────────────
+   CSV EXPORT
+───────────────────────────────────────── */
+function exportCSV() {
+  const rows = [['種別','日付','種目/種類','重量(kg)','回数','セット数','距離(km)','時間(分)','体重(kg)','体脂肪率(%)','メモ']];
+  load(K.w).forEach(r => {
+    if (r.setData && r.setData.length) {
+      r.setData.forEach((s,i) => {
+        rows.push(['ウエイト', r.date, r.exercise, s.weight||0, s.reps||0, i+1, '', '', '', '', i===0 ? (r.memo||'') : '']);
+      });
+    } else {
+      rows.push(['ウエイト', r.date, r.exercise, r.weight||0, r.reps||0, r.sets||1, '', '', '', '', r.memo||'']);
+    }
+  });
+  load(K.c).forEach(r => rows.push(['有酸素', r.date, r.type, '', '', '', r.distance||0, r.duration||0, '', '', r.memo||'']));
+  load(K.b).forEach(r => rows.push(['体重',  r.date, '',  '', '', '', '', '', r.weight||0, r.fatPct!=null?r.fatPct:'', '']));
+
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `fitness_${today()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  toast('⬇ CSVをダウンロードしました');
+}
+
+/* ─────────────────────────────────────────
+   BODY WEEK SUMMARY
+───────────────────────────────────────── */
+function renderBodyWeekSummary() {
+  const el = document.getElementById('b-week-summary');
+  if (!el) return;
+  const all = load(K.b).sort((a,b) => a.date.localeCompare(b.date));
+  if (all.length < 2) { el.innerHTML = ''; return; }
+
+  const dow = parseDate(today()).dow;
+  const thisMonday = daysAgo(dow === 0 ? 6 : dow - 1);
+  const lastMonday = daysAgo((dow === 0 ? 6 : dow - 1) + 7);
+
+  const thisWeek = all.filter(r => r.date >= thisMonday);
+  const lastWeek = all.filter(r => r.date >= lastMonday && r.date < thisMonday);
+
+  if (!thisWeek.length) { el.innerHTML = ''; return; }
+
+  const avg = arr => arr.reduce((s,r) => s + r.weight, 0) / arr.length;
+  const thisAvg = avg(thisWeek);
+  const lastAvg = lastWeek.length ? avg(lastWeek) : null;
+  const diff    = lastAvg !== null ? thisAvg - lastAvg : null;
+
+  const latest  = thisWeek[thisWeek.length - 1];
+  const earliest = thisWeek[0];
+
+  let diffHTML = '';
+  if (diff !== null) {
+    const sign  = diff > 0 ? '▲' : diff < 0 ? '▼' : '±';
+    const color = diff > 0 ? 'var(--red)' : diff < 0 ? 'var(--green)' : 'var(--sub)';
+    diffHTML = `<span style="font-size:13px;font-weight:800;color:${color};margin-left:8px;">${sign}${Math.abs(diff).toFixed(1)}kg 先週比</span>`;
+  }
+
+  const weekChange = thisWeek.length >= 2
+    ? (latest.weight - earliest.weight)
+    : null;
+  let weekChangeHTML = '';
+  if (weekChange !== null) {
+    const sign  = weekChange > 0 ? '▲' : weekChange < 0 ? '▼' : '±';
+    const color = weekChange > 0 ? 'var(--red)' : weekChange < 0 ? 'var(--green)' : 'var(--sub)';
+    weekChangeHTML = `<div style="font-size:11px;color:var(--sub);margin-top:2px;">今週の変化: <span style="color:${color};font-weight:800;">${sign}${Math.abs(weekChange).toFixed(1)}kg</span></div>`;
+  }
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-label" style="color:var(--amber);">This Week</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(255,149,0,.2) 50%,transparent);"></div>
+      <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;">
+        <span style="font-size:28px;font-weight:900;color:var(--amber);">${thisAvg.toFixed(1)}</span>
+        <span style="font-size:13px;color:var(--sub);font-weight:700;">kg 今週平均</span>
+        ${diffHTML}
+      </div>
+      ${weekChangeHTML}
+      <div style="font-size:11px;color:var(--sub);margin-top:4px;">今週 ${thisWeek.length}回記録</div>
+    </div>`;
 }
 
 /* ─────────────────────────────────────────
