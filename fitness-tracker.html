@@ -545,6 +545,36 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   display: flex; align-items: center; justify-content: center;
 }
 
+/* ═══════════ UNDO TOAST ═══════════ */
+.undo-btn {
+  background: rgba(255,255,255,.18); color: #fff;
+  border: none; border-radius: 6px;
+  padding: 4px 11px; font-size: 12px; font-weight: 800;
+  cursor: pointer; margin-left: 10px; font-family: inherit;
+  vertical-align: middle; -webkit-appearance: none;
+}
+
+/* ═══════════ LOAD MORE ═══════════ */
+.btn-load-more {
+  width: 100%; padding: 13px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 14px; color: var(--sub);
+  font-size: 12px; font-weight: 800; cursor: pointer;
+  margin-top: 4px; font-family: inherit;
+  -webkit-appearance: none; transition: background .15s; letter-spacing: .04em;
+}
+.btn-load-more:active { background: var(--card2); }
+
+/* ═══════════ PERIOD FILTER ═══════════ */
+.period-group { display: flex; gap: 4px; margin-bottom: 12px; justify-content: flex-end; }
+.period-btn {
+  padding: 5px 11px; border-radius: 7px;
+  border: 1px solid var(--border); font-size: 10px; font-weight: 800;
+  cursor: pointer; background: transparent; color: var(--sub);
+  transition: all .18s; font-family: inherit; -webkit-appearance: none; letter-spacing: .02em;
+}
+.period-btn.active { background: rgba(255,85,0,.12); border-color: var(--accent); color: var(--accent); }
+
 /* ═══════════ AUTH / SYNC ═══════════ */
 .header-right {
   display: flex; align-items: center; gap: 10px;
@@ -846,6 +876,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="card">
       <div class="card-label" style="color:var(--amber);">Body Weight Trend</div>
       <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,149,0,.2) 50%, transparent);"></div>
+      <div class="period-group">
+        <button class="period-btn" onclick="setPeriodBw('1m',this)">1ヶ月</button>
+        <button class="period-btn" onclick="setPeriodBw('3m',this)">3ヶ月</button>
+        <button class="period-btn active" onclick="setPeriodBw('all',this)">全期間</button>
+      </div>
       <div class="chart-wrap" id="bw-chart-wrap">
         <canvas id="bw-chart"></canvas>
       </div>
@@ -859,6 +894,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
         <select id="ex-sel" onchange="drawExChart()">
           <option value="">-- 種目を選んでください --</option>
         </select>
+      </div>
+      <div class="period-group" style="margin-top:12px;margin-bottom:0;">
+        <button class="period-btn" onclick="setPeriodEx('1m',this)">1ヶ月</button>
+        <button class="period-btn" onclick="setPeriodEx('3m',this)">3ヶ月</button>
+        <button class="period-btn active" onclick="setPeriodEx('all',this)">全期間</button>
       </div>
     </div>
     <div class="card" id="ex-chart-card" style="display:none;">
@@ -977,10 +1017,19 @@ function fmtDateShort(s) {
 }
 
 function toast(msg) {
+  clearTimeout(_toastTimer);
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function toastUndo() {
+  clearTimeout(_toastTimer);
+  clearTimeout(_deleteTimer);
+  const el = document.getElementById('toast');
+  el.innerHTML = '🗑️ 削除しました <button class="undo-btn" onclick="undoDelete()">元に戻す</button>';
+  el.classList.add('show');
+  _deleteTimer = setTimeout(() => { el.classList.remove('show'); _deletedRecord = null; }, 4500);
 }
 
 /* ─────────────────────────────────────────
@@ -1011,6 +1060,9 @@ window.addEventListener('DOMContentLoaded', () => {
 ───────────────────────────────────────── */
 let curFilter = 'all';
 let bwChart = null, exChart = null;
+let graphPeriod = { bw: 'all', ex: 'all' };
+let showLimit = { w: 15, c: 15, b: 15 };
+let _deletedRecord = null, _deleteTimer = null, _toastTimer = null;
 
 // 編集中のレコードID（null = 新規モード）
 let editingId = { w: null, c: null, b: null };
@@ -1247,15 +1299,17 @@ function saveWeight() {
     toast('🔥 記録しました！');
   }
   save(K.w, arr);
+  showLimit.w = 15;
   resetWForm();
   renderWRecent();
   renderStreaks();
 }
 
 function renderWRecent() {
-  const recs = applySort(load(K.w), sortOrder.w).slice(0, 15);
+  const all  = applySort(load(K.w), sortOrder.w);
+  const recs = all.slice(0, showLimit.w);
   const el   = document.getElementById('w-recent');
-  if (!recs.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
+  if (!all.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
 
   el.innerHTML = recs.map(r => {
     const wt   = r.weight > 0;
@@ -1287,7 +1341,9 @@ function renderWRecent() {
           </div>
         </div>
       </div>`;
-  }).join('');
+  }).join('') + (all.length > showLimit.w
+    ? `<button class="btn-load-more" onclick="loadMore('w')">▼ さらに表示 (${all.length - showLimit.w}件)</button>`
+    : '');
 }
 
 /* ─────────────────────────────────────────
@@ -1312,15 +1368,17 @@ function saveCardio() {
     toast('🔥 記録しました！');
   }
   save(K.c, arr);
+  showLimit.c = 15;
   resetCForm();
   renderCRecent();
   renderStreaks();
 }
 
 function renderCRecent() {
-  const recs = applySort(load(K.c), sortOrder.c).slice(0, 15);
+  const all  = applySort(load(K.c), sortOrder.c);
+  const recs = all.slice(0, showLimit.c);
   const el   = document.getElementById('c-recent');
-  if (!recs.length) { el.innerHTML = emptyHTML('🏃','NO RECORDS YET'); return; }
+  if (!all.length) { el.innerHTML = emptyHTML('🏃','NO RECORDS YET'); return; }
 
   el.innerHTML = recs.map(r => `
     <div class="rec-card">
@@ -1341,7 +1399,9 @@ function renderCRecent() {
         </div>
       </div>
     </div>
-  `).join('');
+  `).join('') + (all.length > showLimit.c
+    ? `<button class="btn-load-more" onclick="loadMore('c')">▼ さらに表示 (${all.length - showLimit.c}件)</button>`
+    : '');
 }
 
 /* ─────────────────────────────────────────
@@ -1366,13 +1426,15 @@ function saveBody() {
     toast('🔥 記録しました！');
   }
   save(K.b, arr);
+  showLimit.b = 15;
   resetBForm();
   renderBRecent();
 }
 
 function renderBRecent() {
   const all  = load(K.b).sort((a,b)=>b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-  const recs = applySort(load(K.b), sortOrder.b).slice(0, 15);
+  const sorted = applySort(load(K.b), sortOrder.b);
+  const recs   = sorted.slice(0, showLimit.b);
 
   const lc = document.getElementById('bw-latest-card');
   const ld = document.getElementById('bw-latest');
@@ -1422,7 +1484,9 @@ function renderBRecent() {
         </div>
       </div>
     </div>
-  `).join('');
+  `).join('') + (sorted.length > showLimit.b
+    ? `<button class="btn-load-more" onclick="loadMore('b')">▼ さらに表示 (${sorted.length - showLimit.b}件)</button>`
+    : '');
 }
 
 /* ─────────────────────────────────────────
@@ -1509,6 +1573,32 @@ function histItem(r) {
 /* ─────────────────────────────────────────
    GRAPHS
 ───────────────────────────────────────── */
+function loadMore(type) {
+  showLimit[type] += 15;
+  if      (type === 'w') renderWRecent();
+  else if (type === 'c') renderCRecent();
+  else if (type === 'b') renderBRecent();
+}
+
+function filterByPeriod(records, period) {
+  if (period === 'all') return records;
+  const days = period === '1m' ? 30 : 90;
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return records.filter(r => r.date >= cutoff);
+}
+function setPeriodBw(p, el) {
+  graphPeriod.bw = p;
+  document.querySelectorAll('#g-bw .period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  drawBwChart();
+}
+function setPeriodEx(p, el) {
+  graphPeriod.ex = p;
+  document.querySelectorAll('#g-ex .period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  drawExChart();
+}
+
 function gTab(tab, el) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
@@ -1554,7 +1644,8 @@ function chartOpts(unit) {
 
 function drawBwChart() {
   if (bwChart) { bwChart.destroy(); bwChart = null; }
-  const recs   = load(K.b).sort((a,b)=>a.date.localeCompare(b.date));
+  const all    = load(K.b).sort((a,b) => a.date.localeCompare(b.date));
+  const recs   = filterByPeriod(all, graphPeriod.bw);
   const canvas = resetChartWrap('bw-chart-wrap','bw-chart');
 
   if (!recs.length) {
@@ -1563,28 +1654,57 @@ function drawBwChart() {
     return;
   }
 
+  const hasFat = recs.some(r => r.fatPct != null);
+  const datasets = [{
+    label: '体重(kg)',
+    data:  recs.map(r => r.weight),
+    borderColor: '#ff9500',
+    backgroundColor: ctx => {
+      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
+      g.addColorStop(0, 'rgba(255,149,0,.25)'); g.addColorStop(1, 'rgba(255,149,0,.01)');
+      return g;
+    },
+    fill: true, tension: 0.4,
+    pointBackgroundColor: '#ff9500', pointBorderColor: '#080808', pointBorderWidth: 2,
+    pointRadius: 5, pointHoverRadius: 8, borderWidth: 2.5, yAxisID: 'y',
+  }];
+
+  if (hasFat) {
+    datasets.push({
+      label: '体脂肪率(%)',
+      data:  recs.map(r => r.fatPct ?? null),
+      borderColor: '#ff2d55',
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
+        g.addColorStop(0, 'rgba(255,45,85,.18)'); g.addColorStop(1, 'rgba(255,45,85,.01)');
+        return g;
+      },
+      fill: true, tension: 0.4, borderDash: [5, 3], spanGaps: true,
+      pointBackgroundColor: '#ff2d55', pointBorderColor: '#080808', pointBorderWidth: 2,
+      pointRadius: 4, pointHoverRadius: 7, borderWidth: 2, yAxisID: 'y2',
+    });
+  }
+
   bwChart = new Chart(canvas, {
     type: 'line',
-    data: {
-      labels: recs.map(r => fmtDateShort(r.date)),
-      datasets: [{
-        label: '体重',
-        data:  recs.map(r => r.weight),
-        borderColor: '#ff9500',
-        backgroundColor: (ctx) => {
-          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
-          g.addColorStop(0, 'rgba(255,149,0,.25)');
-          g.addColorStop(1, 'rgba(255,149,0,.01)');
-          return g;
-        },
-        fill: true, tension: 0.4,
-        pointBackgroundColor: '#ff9500',
-        pointBorderColor: '#080808', pointBorderWidth: 2,
-        pointRadius: 5, pointHoverRadius: 8,
-        borderWidth: 2.5,
-      }]
-    },
-    options: chartOpts('kg')
+    data: { labels: recs.map(r => fmtDateShort(r.date)), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: hasFat, labels: { color: '#efefef', font: { size: 11, weight: '700' }, boxWidth: 24 } },
+        tooltip: { backgroundColor: '#1c1c1c', borderColor: '#333', borderWidth: 1,
+          titleColor: '#efefef', bodyColor: '#efefef', padding: 10 }
+      },
+      scales: {
+        y:  { grid: { color: 'rgba(255,255,255,.05)' }, border: { color: 'transparent' },
+              ticks: { color: '#505050', font: { size: 11, weight: '700' }, callback: v => v+'kg' } },
+        y2: hasFat ? { position: 'right', grid: { display: false }, border: { color: 'transparent' },
+              ticks: { color: '#ff2d55', font: { size: 11, weight: '700' }, callback: v => v+'%' } }
+                   : { display: false },
+        x:  { grid: { display: false }, border: { color: 'transparent' },
+              ticks: { color: '#505050', font: { size: 11, weight: '700' } } }
+      }
+    }
   });
 }
 
@@ -1606,7 +1726,8 @@ function drawExChart() {
   card.style.display = 'block';
   document.getElementById('ex-chart-label').textContent = `${exercise} — MAX WEIGHT TREND`;
 
-  const recs = load(K.w).filter(r => r.exercise === exercise);
+  const all  = load(K.w).filter(r => r.exercise === exercise);
+  const recs = filterByPeriod(all, graphPeriod.ex);
   const byDate = {};
   recs.forEach(r => {
     if (!byDate[r.date] || r.weight > byDate[r.date]) byDate[r.date] = r.weight;
@@ -1649,10 +1770,26 @@ function drawExChart() {
    DELETE
 ───────────────────────────────────────── */
 function delRec(key, id, cb) {
-  if (!confirm('この記録を削除しますか？')) return;
-  save(key, load(key).filter(r => r.id !== id));
-  toast('🗑️ 削除しました');
+  const arr = load(key);
+  const idx = arr.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  _deletedRecord = { key, record: arr[idx], cb };
+  arr.splice(idx, 1);
+  save(key, arr);
   if (typeof cb === 'function') cb();
+  toastUndo();
+}
+function undoDelete() {
+  if (!_deletedRecord) return;
+  clearTimeout(_deleteTimer);
+  const { key, record, cb } = _deletedRecord;
+  _deletedRecord = null;
+  const arr = load(key);
+  arr.push(record);
+  save(key, arr);
+  document.getElementById('toast').classList.remove('show');
+  if (typeof cb === 'function') cb();
+  toast('↩️ 元に戻しました');
 }
 
 /* ─────────────────────────────────────────
