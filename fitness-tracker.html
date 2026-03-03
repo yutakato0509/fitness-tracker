@@ -396,22 +396,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 }
 .btn-cancel:active { background: rgba(255,59,48,.1); border-color: var(--red); color: var(--red); }
 
-/* ═══════════ SORT ═══════════ */
-.section-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin: 8px 2px 12px;
-}
-.section-header .section-title { margin: 0; }
-.sort-group { display: flex; gap: 4px; }
-.sort-btn {
-  padding: 5px 9px; border-radius: 7px;
-  border: 1px solid var(--border); font-size: 10px; font-weight: 800;
-  cursor: pointer; white-space: nowrap; background: transparent; color: var(--sub);
-  transition: all .18s; font-family: inherit; letter-spacing: .02em;
-  -webkit-appearance: none;
-}
-.sort-btn.active { background: rgba(255,85,0,.12); border-color: var(--accent); color: var(--accent); }
-
 /* ═══════════ EDIT BUTTON ═══════════ */
 .rec-actions { display: flex; gap: 5px; }
 .btn-edit {
@@ -421,85 +405,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   cursor: pointer; -webkit-appearance: none; font-family: inherit; transition: background .15s;
 }
 .btn-edit:active { background: rgba(255,85,0,.2); }
-
-/* ═══════════ FAVORITES ═══════════ */
-.fav-section {
-  margin-bottom: 14px;
-}
-.fav-section-label {
-  font-size: 10px; font-weight: 800; color: #ff2d55;
-  text-transform: uppercase; letter-spacing: .1em;
-  margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
-}
-.fav-chips-row {
-  display: flex; flex-wrap: wrap; gap: 7px;
-}
-.fav-chip {
-  display: flex; align-items: center; gap: 5px;
-  padding: 7px 13px;
-  background: rgba(255,45,85,.08);
-  border: 1.5px solid rgba(255,45,85,.25);
-  border-radius: 20px;
-  font-size: 13px; font-weight: 700; color: var(--text);
-  cursor: pointer; white-space: nowrap;
-  transition: background .15s, transform .12s;
-}
-.fav-chip:active {
-  background: rgba(255,45,85,.2);
-  transform: scale(.95);
-}
-.fav-chip .fav-chip-icon { font-size: 12px; }
-
-/* Exercise input + heart button row */
-.input-with-heart {
-  display: flex; gap: 8px; align-items: stretch;
-}
-.input-with-heart input { flex: 1; }
-.heart-btn {
-  flex-shrink: 0;
-  width: 48px;
-  background: var(--card2);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-size: 22px; line-height: 1;
-  cursor: pointer;
-  display: none;               /* 種目名が入力されたら表示 */
-  align-items: center; justify-content: center;
-  transition: background .18s, border-color .18s, transform .12s;
-  -webkit-appearance: none;
-}
-.heart-btn.visible   { display: flex; }
-.heart-btn.favorited { background: rgba(255,45,85,.12); border-color: #ff2d55; }
-.heart-btn:active    { transform: scale(.88); }
-
-/* ═══════════ STREAK ═══════════ */
-.streak-card {
-  background: linear-gradient(135deg, rgba(255,85,0,.1), rgba(255,45,85,.06));
-  border: 1px solid rgba(255,85,0,.2);
-  border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
-  display: flex; align-items: center; gap: 14px;
-}
-.streak-card.streak-green {
-  background: linear-gradient(135deg, rgba(0,212,106,.1), rgba(0,179,89,.06));
-  border-color: rgba(0,212,106,.2);
-}
-.streak-fire { font-size: 36px; line-height: 1; flex-shrink: 0; }
-.streak-info { flex: 1; min-width: 0; }
-.streak-row { display: flex; align-items: baseline; gap: 5px; }
-.streak-num {
-  font-size: 44px; font-weight: 900; line-height: 1;
-  background: linear-gradient(135deg, #ff5500, #ff2d55);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text; font-variant-numeric: tabular-nums;
-}
-.streak-card.streak-green .streak-num {
-  background: linear-gradient(135deg, #00d46a, #00b359);
-  -webkit-background-clip: text; background-clip: text;
-}
-.streak-unit { font-size: 13px; font-weight: 800; color: var(--sub); }
-.streak-msg { font-size: 12px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.4; }
-.streak-zero { opacity: .35; filter: grayscale(.5); }
 
 /* Volume badge */
 .vol-badge {
@@ -895,7 +800,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 </div>
 
 <div id="view-weight" class="view">
-  <div id="w-streak" class="streak-card streak-zero" style="display:none;"></div>
   <div class="card">
     <div class="card-label">Weight Training</div>
     <div class="glow-line"></div>
@@ -908,19 +812,10 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div id="tpl-chips" class="tpl-chips"></div>
     </div>
 
-    <!-- お気に入り種目チップ -->
-    <div id="fav-section" class="fav-section" style="display:none;">
-      <div class="fav-section-label">❤️ お気に入り</div>
-      <div id="fav-chips-row" class="fav-chips-row"></div>
-    </div>
-
     <div class="field">
       <label>種目名</label>
-      <div class="input-with-heart">
-        <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
-               oninput="onExerciseInput(this.value)">
-        <button class="heart-btn" id="heart-btn" onclick="toggleFav()" title="お気に入り登録">🤍</button>
-      </div>
+      <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
+             oninput="onExerciseInput(this.value)">
       <datalist id="ex-list">
         <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
         <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
@@ -959,14 +854,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="btn btn-cancel" id="w-cancel-btn" onclick="cancelEdit('w')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div class="section-header">
-    <div class="section-title">最近のログ</div>
-    <div class="sort-group" id="w-sort-group">
-      <button class="sort-btn active" onclick="setSortW('default',this)">入力順</button>
-      <button class="sort-btn" onclick="setSortW('desc',this)">新しい順</button>
-      <button class="sort-btn" onclick="setSortW('asc',this)">古い順</button>
-    </div>
-  </div>
+  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
   <div id="w-recent"></div>
 </div>
 
@@ -974,7 +862,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
      VIEW: 有酸素
 ════════════════════════════════════════ -->
 <div id="view-cardio" class="view">
-  <div id="c-streak" class="streak-card streak-green streak-zero" style="display:none;"></div>
   <div class="card">
     <div class="card-label">Cardio</div>
     <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(0,212,106,.25) 50%, transparent);"></div>
@@ -1020,14 +907,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="btn btn-cancel" id="c-cancel-btn" onclick="cancelEdit('c')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div class="section-header">
-    <div class="section-title">最近のログ</div>
-    <div class="sort-group" id="c-sort-group">
-      <button class="sort-btn active" onclick="setSortC('default',this)">入力順</button>
-      <button class="sort-btn" onclick="setSortC('desc',this)">新しい順</button>
-      <button class="sort-btn" onclick="setSortC('asc',this)">古い順</button>
-    </div>
-  </div>
+  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
   <div id="c-recent"></div>
 </div>
 
@@ -1070,16 +950,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="btn btn-cancel" id="b-cancel-btn" onclick="cancelEdit('b')" style="display:none;">✕ キャンセル</button>
   </div>
 
-  <div id="b-week-summary"></div>
-
-  <div class="section-header">
-    <div class="section-title">最近のログ</div>
-    <div class="sort-group" id="b-sort-group">
-      <button class="sort-btn active" onclick="setSortB('default',this)">入力順</button>
-      <button class="sort-btn" onclick="setSortB('desc',this)">新しい順</button>
-      <button class="sort-btn" onclick="setSortB('asc',this)">古い順</button>
-    </div>
-  </div>
+  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
   <div id="b-recent"></div>
 </div>
 
@@ -1095,11 +966,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="chip" onclick="setFilter('body',this)">⚖️ 体重</div>
     </div>
     <button class="btn-ghost" onclick="exportCSV()" style="flex-shrink:0;margin-left:8px;margin-bottom:8px;">⬇ CSV</button>
-  </div>
-  <div class="sort-group" id="hist-sort-group" style="margin-bottom:14px;">
-    <button class="sort-btn" onclick="setSortHist('default',this)">入力順</button>
-    <button class="sort-btn active" onclick="setSortHist('desc',this)">新しい順</button>
-    <button class="sort-btn" onclick="setSortHist('asc',this)">古い順</button>
   </div>
   <div id="hist-list"></div>
 </div>
@@ -1381,14 +1247,12 @@ window.addEventListener('DOMContentLoaded', () => {
   ['w-date','c-date','b-date'].forEach(id => document.getElementById(id).value = t);
 
   document.getElementById('photo-date').value = today();
-  addSetRow(); // 初期セット行を追加
+  addSetRow();
   renderTemplates();
   renderHome();
-  renderFavChips();
   renderWRecent();
   renderCRecent();
   renderBRecent();
-  renderStreaks();
   openPhotoDB();
   initFirebase();
   checkOnboarding();
@@ -1403,12 +1267,7 @@ let graphPeriod = { bw: 'all', ex: 'all', cardio: 'all' };
 let cardioMetric = 'distance';
 let showLimit = { w: 15, c: 15, b: 15 };
 let _deletedRecord = null, _deleteTimer = null, _toastTimer = null;
-
-// 編集中のレコードID（null = 新規モード）
 let editingId = { w: null, c: null, b: null };
-
-// 並び替え状態（'default'=入力順, 'desc'=新しい順, 'asc'=古い順）
-let sortOrder = { w: 'default', c: 'default', b: 'default', hist: 'desc' };
 
 // 指定ビューに切り替える（ナビアイコンのactive状態も同期）
 function goToView(view) {
@@ -1427,33 +1286,9 @@ function nav(view, el) {
   if (view === 'calendar') renderCalendar();
 }
 
-// ─── ソート適用 ───────────────────────────
-function applySort(arr, order) {
-  const copy = arr.slice();
-  if (order === 'desc')    copy.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-  else if (order === 'asc') copy.sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
-  // 'default' = 配列の挿入順（ソートなし）
-  return copy;
-}
-function setSortW(order, el) {
-  sortOrder.w = order;
-  document.querySelectorAll('#w-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); renderWRecent();
-}
-function setSortC(order, el) {
-  sortOrder.c = order;
-  document.querySelectorAll('#c-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); renderCRecent();
-}
-function setSortB(order, el) {
-  sortOrder.b = order;
-  document.querySelectorAll('#b-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); renderBRecent();
-}
-function setSortHist(order, el) {
-  sortOrder.hist = order;
-  document.querySelectorAll('#hist-sort-group .sort-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); renderHistory();
+// 新しい順（日付降順）で並び替え
+function sortDesc(arr) {
+  return arr.slice().sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
 
 // ─── フォームリセット ───────────────────────
@@ -1463,7 +1298,6 @@ function resetWForm() {
   document.getElementById('w-date').value     = today();
   document.getElementById('w-memo').value     = '';
   document.getElementById('autofill-hint').style.display = 'none';
-  updateHeartBtn('');
   document.getElementById('w-edit-banner').style.display = 'none';
   document.getElementById('w-save-btn').textContent = 'REC ＋ 記録する';
   document.getElementById('w-cancel-btn').style.display = 'none';
@@ -1512,7 +1346,6 @@ function editRecord(type, id) {
       const n = data.sets || 1;
       for (let i = 0; i < n; i++) addSetRow(i === 0 ? (data.weight || '') : '', data.reps || '');
     }
-    updateHeartBtn(data.exercise || '');
     document.getElementById('w-edit-banner').textContent = `✏️ 編集中: ${data.exercise}`;
     document.getElementById('w-edit-banner').style.display = 'block';
     document.getElementById('w-save-btn').textContent = '✓ 更新する';
@@ -1547,63 +1380,11 @@ function cancelEdit(type) {
   else if (type === 'b') resetBForm();
 }
 
-/* ─────────────────────────────────────────
-   FAVORITES
-───────────────────────────────────────── */
-function toggleFav() {
-  const exercise = document.getElementById('w-exercise').value.trim();
-  if (!exercise) return;
-  const favs = load(K.favs);
-  const idx  = favs.indexOf(exercise);
-  if (idx === -1) {
-    favs.push(exercise);
-    toast('❤️ お気に入りに追加しました');
-  } else {
-    favs.splice(idx, 1);
-    toast('🗑️ お気に入りから削除しました');
-  }
-  save(K.favs, favs);
-  updateHeartBtn(exercise);
-  renderFavChips();
-}
-
-function updateHeartBtn(val) {
-  const btn = document.getElementById('heart-btn');
-  const trimmed = val.trim();
-  if (!trimmed) {
-    btn.classList.remove('visible', 'favorited');
-    return;
-  }
-  const isFav = load(K.favs).includes(trimmed);
-  btn.classList.add('visible');
-  btn.classList.toggle('favorited', isFav);
-  btn.textContent = isFav ? '❤️' : '🤍';
-}
-
-function renderFavChips() {
-  const favs    = load(K.favs);
-  const section = document.getElementById('fav-section');
-  const row     = document.getElementById('fav-chips-row');
-  if (!favs.length) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  row.innerHTML = favs.map(f => `
-    <div class="fav-chip" data-ex="${esc(f)}" onclick="selectFav(this.dataset.ex)">
-      <span class="fav-chip-icon">❤️</span>${esc(f)}
-    </div>
-  `).join('');
-}
-
-function selectFav(exercise) {
-  document.getElementById('w-exercise').value = exercise;
-  updateHeartBtn(exercise);
-  autofillSets(exercise);
-}
 
 /* ─────────────────────────────────────────
    AUTO-FILL LAST EXERCISE
 ───────────────────────────────────────── */
 function onExerciseInput(val) {
-  updateHeartBtn(val);
   if (!val.trim()) { document.getElementById('autofill-hint').style.display='none'; return; }
   autofillSets(val.trim());
 }
@@ -1649,12 +1430,11 @@ function saveWeight() {
   showLimit.w = 15;
   resetWForm();
   renderWRecent();
-  renderStreaks();
   renderHome();
 }
 
 function renderWRecent() {
-  const all  = applySort(load(K.w), sortOrder.w);
+  const all  = sortDesc(load(K.w));
   const recs = all.slice(0, showLimit.w);
   const el   = document.getElementById('w-recent');
   if (!all.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
@@ -1737,11 +1517,11 @@ function saveCardio() {
   showLimit.c = 15;
   resetCForm();
   renderCRecent();
-  renderStreaks();
+  renderHome();
 }
 
 function renderCRecent() {
-  const all  = applySort(load(K.c), sortOrder.c);
+  const all  = sortDesc(load(K.c));
   const recs = all.slice(0, showLimit.c);
   const el   = document.getElementById('c-recent');
   if (!all.length) { el.innerHTML = emptyHTML('🏃','NO RECORDS YET'); return; }
@@ -1800,9 +1580,8 @@ function saveBody() {
 }
 
 function renderBRecent() {
-  const all  = load(K.b).sort((a,b)=>b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-  const sorted = applySort(load(K.b), sortOrder.b);
-  const recs   = sorted.slice(0, showLimit.b);
+  const all  = sortDesc(load(K.b));
+  const recs = all.slice(0, showLimit.b);
 
   const lc = document.getElementById('bw-latest-card');
   const ld = document.getElementById('bw-latest');
@@ -1832,15 +1611,13 @@ function renderBRecent() {
     lc.style.display = 'none';
   }
 
-  renderBodyWeekSummary();
-
   const el = document.getElementById('b-recent');
   if (!recs.length) { el.innerHTML = emptyHTML('⚖️','NO RECORDS YET'); return; }
 
   el.innerHTML = recs.map(r => `
     <div class="rec-card">
       <div class="rec-card-body">
-        <div class="rec-card-nums">
+        <div class="rec-card-nums" style="margin-top:4px;">
           <span class="rec-num" style="font-size:32px;color:var(--amber);">${r.weight}</span>
           <span class="rec-unit" style="font-size:14px;">kg</span>
           ${r.fatPct != null ? `<span class="rec-sep">·</span><span class="rec-num" style="font-size:22px;color:var(--accent2);">${r.fatPct}</span><span class="rec-unit">%</span>` : ''}
@@ -1854,8 +1631,8 @@ function renderBRecent() {
         </div>
       </div>
     </div>
-  `).join('') + (sorted.length > showLimit.b
-    ? `<button class="btn-load-more" onclick="loadMore('b')">▼ さらに表示 (${sorted.length - showLimit.b}件)</button>`
+  `).join('') + (all.length > showLimit.b
+    ? `<button class="btn-load-more" onclick="loadMore('b')">▼ さらに表示 (${all.length - showLimit.b}件)</button>`
     : '');
 }
 
@@ -1876,10 +1653,7 @@ function renderHistory() {
 
   let all = { all:[...weights,...cardios,...bodies], weight:weights, cardio:cardios, body:bodies }[curFilter];
 
-  // 入力順 = id（作成時刻）降順、新しい順/古い順 = date基準
-  if      (sortOrder.hist === 'default') all.sort((a,b) => b.id.localeCompare(a.id));
-  else if (sortOrder.hist === 'desc')    all.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-  else if (sortOrder.hist === 'asc')     all.sort((a,b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  all.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 
   const el = document.getElementById('hist-list');
   if (!all.length) { el.innerHTML = emptyHTML('📋','NO RECORDS YET'); return; }
@@ -2604,62 +2378,6 @@ function exportCSV() {
   toast('⬇ CSVをダウンロードしました');
 }
 
-/* ─────────────────────────────────────────
-   BODY WEEK SUMMARY
-───────────────────────────────────────── */
-function renderBodyWeekSummary() {
-  const el = document.getElementById('b-week-summary');
-  if (!el) return;
-  const all = load(K.b).sort((a,b) => a.date.localeCompare(b.date));
-  if (all.length < 2) { el.innerHTML = ''; return; }
-
-  const dow = parseDate(today()).dow;
-  const thisMonday = daysAgo(dow === 0 ? 6 : dow - 1);
-  const lastMonday = daysAgo((dow === 0 ? 6 : dow - 1) + 7);
-
-  const thisWeek = all.filter(r => r.date >= thisMonday);
-  const lastWeek = all.filter(r => r.date >= lastMonday && r.date < thisMonday);
-
-  if (!thisWeek.length) { el.innerHTML = ''; return; }
-
-  const avg = arr => arr.reduce((s,r) => s + r.weight, 0) / arr.length;
-  const thisAvg = avg(thisWeek);
-  const lastAvg = lastWeek.length ? avg(lastWeek) : null;
-  const diff    = lastAvg !== null ? thisAvg - lastAvg : null;
-
-  const latest  = thisWeek[thisWeek.length - 1];
-  const earliest = thisWeek[0];
-
-  let diffHTML = '';
-  if (diff !== null) {
-    const sign  = diff > 0 ? '▲' : diff < 0 ? '▼' : '±';
-    const color = diff > 0 ? 'var(--red)' : diff < 0 ? 'var(--green)' : 'var(--sub)';
-    diffHTML = `<span style="font-size:13px;font-weight:800;color:${color};margin-left:8px;">${sign}${Math.abs(diff).toFixed(1)}kg 先週比</span>`;
-  }
-
-  const weekChange = thisWeek.length >= 2
-    ? (latest.weight - earliest.weight)
-    : null;
-  let weekChangeHTML = '';
-  if (weekChange !== null) {
-    const sign  = weekChange > 0 ? '▲' : weekChange < 0 ? '▼' : '±';
-    const color = weekChange > 0 ? 'var(--red)' : weekChange < 0 ? 'var(--green)' : 'var(--sub)';
-    weekChangeHTML = `<div style="font-size:11px;color:var(--sub);margin-top:2px;">今週の変化: <span style="color:${color};font-weight:800;">${sign}${Math.abs(weekChange).toFixed(1)}kg</span></div>`;
-  }
-
-  el.innerHTML = `
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-label" style="color:var(--amber);">This Week</div>
-      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(255,149,0,.2) 50%,transparent);"></div>
-      <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;">
-        <span style="font-size:28px;font-weight:900;color:var(--amber);">${thisAvg.toFixed(1)}</span>
-        <span style="font-size:13px;color:var(--sub);font-weight:700;">kg 今週平均</span>
-        ${diffHTML}
-      </div>
-      ${weekChangeHTML}
-      <div style="font-size:11px;color:var(--sub);margin-top:4px;">今週 ${thisWeek.length}回記録</div>
-    </div>`;
-}
 
 /* ─────────────────────────────────────────
    DELETE
@@ -3088,27 +2806,6 @@ function streakMsg(n, type) {
   return `${n}日連続！！伝説のアスリート 🏆`;
 }
 
-function renderStreaks() {
-  [
-    { id: 'w-streak', records: load(K.w), type: 'w', label: 'DAY STREAK', fire: '🔥' },
-    { id: 'c-streak', records: load(K.c), type: 'c', label: 'DAY STREAK', fire: '🏃' },
-  ].forEach(({ id, records, type, label, fire }) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const n = calcStreak(records);
-    el.style.display = 'flex';
-    el.classList.toggle('streak-zero', n === 0);
-    el.innerHTML = `
-      <div class="streak-fire">${n > 0 ? fire : '💤'}</div>
-      <div class="streak-info">
-        <div class="streak-row">
-          <span class="streak-num">${n}</span>
-          <span class="streak-unit">${label}</span>
-        </div>
-        <div class="streak-msg">${streakMsg(n, type)}</div>
-      </div>`;
-  });
-}
 
 /* ─────────────────────────────────────────
    FIREBASE CONFIG
@@ -3259,7 +2956,7 @@ async function pullFromFirestore(uid) {
     localStorage.setItem(K.b,    JSON.stringify(mb));
     localStorage.setItem(K.favs, JSON.stringify(mf));
     // UI再描画
-    renderFavChips(); renderWRecent(); renderCRecent(); renderBRecent();
+    renderWRecent(); renderCRecent(); renderBRecent(); renderHome();
     // オフライン中に撮った写真をStorageへ同期
     await syncLocalPhotos();
     renderPhotoGrid();
