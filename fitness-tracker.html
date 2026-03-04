@@ -78,6 +78,8 @@ body {
 /* ═══════════ VIEWS ═══════════ */
 .view { display: none; padding: 14px 14px 10px; }
 .view.active { display: block; }
+.rec-panel { display: none; }
+.rec-panel.active { display: block; }
 
 /* ═══════════ CARDS ═══════════ */
 .card {
@@ -791,154 +793,159 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   </div>
 </div>
 
-<div id="view-weight" class="view">
-  <div class="card">
-    <div class="card-label">Weight Training</div>
-    <div class="glow-line"></div>
-
-    <!-- テンプレート -->
-    <div id="tpl-section" class="tpl-section" style="display:none;">
-      <div class="tpl-label">
-        <span>📋 テンプレート</span>
-      </div>
-      <div id="tpl-chips" class="tpl-chips"></div>
-    </div>
-
-    <div class="field">
-      <label>種目名</label>
-      <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
-             oninput="onExerciseInput(this.value)">
-      <datalist id="ex-list">
-        <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
-        <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
-        <option value="デッドリフト"><option value="ルーマニアンデッドリフト">
-        <option value="ショルダープレス"><option value="サイドレイズ"><option value="フロントレイズ">
-        <option value="ラットプルダウン"><option value="チンアップ"><option value="ベントオーバーロウ">
-        <option value="シーテッドロウ"><option value="バーベルロウ">
-        <option value="ダンベルカール"><option value="バーベルカール"><option value="ハンマーカール">
-        <option value="トライセプスエクステンション"><option value="ディップス"><option value="ケーブルプッシュダウン">
-        <option value="レッグカール"><option value="レッグエクステンション"><option value="カーフレイズ">
-        <option value="クランチ"><option value="レッグレイズ"><option value="プランク">
-        <option value="チェストフライ"><option value="ペックデック">
-      </datalist>
-      <div class="autofill-hint" id="autofill-hint">⚡ 前回の記録を自動入力しました</div>
-    </div>
-
-    <div id="w-sets-container"></div>
-    <button class="btn-add-set" onclick="addSetRow()">＋ セットを追加</button>
-    <div style="display:flex;gap:8px;margin-bottom:4px;">
-      <button class="btn-save-tpl" onclick="saveTemplate()">💾 テンプレート保存</button>
-      <button class="btn-open-timer" style="margin:0;flex:1;" onclick="openTimer()">⏱ レストタイマー</button>
-    </div>
-
-    <div class="field" style="margin-top:4px;">
-      <label>日付</label>
-      <input type="date" id="w-date">
-    </div>
-
-    <div class="field">
-      <label>メモ (任意)</label>
-      <textarea id="w-memo" placeholder="フォームの調子、気づきなど..."></textarea>
-    </div>
-
-    <div id="w-edit-banner" class="edit-banner" style="display:none;"></div>
-    <button class="btn btn-primary" id="w-save-btn" onclick="saveWeight()">REC ＋ 記録する</button>
-    <button class="btn btn-cancel" id="w-cancel-btn" onclick="cancelEdit('w')" style="display:none;">✕ キャンセル</button>
-  </div>
-
-  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
-  <div id="w-recent"></div>
-</div>
-
 <!-- ═══════════════════════════════════════
-     VIEW: 有酸素
+     VIEW: 記録（ウエイト / 有酸素 / 体重 / フォト）
 ════════════════════════════════════════ -->
-<div id="view-cardio" class="view">
-  <div class="card">
-    <div class="card-label">Cardio</div>
-    <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(0,212,106,.25) 50%, transparent);"></div>
-
-    <div class="field">
-      <label>種類</label>
-      <select id="c-type">
-        <option>ランニング</option><option>ウォーキング</option>
-        <option>サイクリング</option><option>水泳</option>
-        <option>縄跳び</option><option>エリプティカル</option>
-        <option>ローイングマシン</option><option>HIIT</option>
-        <option>その他</option>
-      </select>
-    </div>
-
-    <div class="row2">
-      <div class="stat-field">
-        <label>時間</label>
-        <input type="number" id="c-duration" placeholder="30" min="1"
-               style="color:var(--green);">
-        <div class="stat-unit">分</div>
-      </div>
-      <div class="stat-field">
-        <label>距離</label>
-        <input type="number" id="c-distance" placeholder="5.0" min="0" step="0.1"
-               style="color:var(--green);">
-        <div class="stat-unit">km</div>
-      </div>
-    </div>
-
-    <div class="field" style="margin-top:4px;">
-      <label>日付</label>
-      <input type="date" id="c-date">
-    </div>
-
-    <div id="c-edit-banner" class="edit-banner" style="display:none;"></div>
-    <button class="btn btn-green" id="c-save-btn" onclick="saveCardio()">REC ＋ 記録する</button>
-    <button class="btn btn-cancel" id="c-cancel-btn" onclick="cancelEdit('c')" style="display:none;">✕ キャンセル</button>
+<div id="view-record" class="view">
+  <div class="tab-bar" style="margin-bottom:14px;">
+    <button class="tab-btn active" data-panel="weight" onclick="switchRecTab('weight',this)">💪 ウエイト</button>
+    <button class="tab-btn" data-panel="cardio" onclick="switchRecTab('cardio',this)">🏃 有酸素</button>
+    <button class="tab-btn" data-panel="body" onclick="switchRecTab('body',this)">⚖️ 体重</button>
+    <button class="tab-btn" data-panel="photo" onclick="switchRecTab('photo',this)">📷 フォト</button>
   </div>
 
-  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
-  <div id="c-recent"></div>
-</div>
-
-<!-- ═══════════════════════════════════════
-     VIEW: 体重
-════════════════════════════════════════ -->
-<div id="view-body" class="view">
-  <div id="bw-latest-card" class="card" style="display:none;">
-    <div class="card-label" style="color:var(--amber);">Current Weight</div>
-    <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,149,0,.25) 50%, transparent);"></div>
-    <div id="bw-latest"></div>
+  <!-- ウエイトパネル -->
+  <div id="rec-weight" class="rec-panel active">
+    <div class="card">
+      <div class="card-label">Weight Training</div>
+      <div class="glow-line"></div>
+      <div id="tpl-section" class="tpl-section" style="display:none;">
+        <div class="tpl-label"><span>📋 テンプレート</span></div>
+        <div id="tpl-chips" class="tpl-chips"></div>
+      </div>
+      <div class="field">
+        <label>種目名</label>
+        <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
+               oninput="onExerciseInput(this.value)">
+        <datalist id="ex-list">
+          <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
+          <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
+          <option value="デッドリフト"><option value="ルーマニアンデッドリフト">
+          <option value="ショルダープレス"><option value="サイドレイズ"><option value="フロントレイズ">
+          <option value="ラットプルダウン"><option value="チンアップ"><option value="ベントオーバーロウ">
+          <option value="シーテッドロウ"><option value="バーベルロウ">
+          <option value="ダンベルカール"><option value="バーベルカール"><option value="ハンマーカール">
+          <option value="トライセプスエクステンション"><option value="ディップス"><option value="ケーブルプッシュダウン">
+          <option value="レッグカール"><option value="レッグエクステンション"><option value="カーフレイズ">
+          <option value="クランチ"><option value="レッグレイズ"><option value="プランク">
+          <option value="チェストフライ"><option value="ペックデック">
+        </datalist>
+        <div class="autofill-hint" id="autofill-hint">⚡ 前回の記録を自動入力しました</div>
+      </div>
+      <div id="w-sets-container"></div>
+      <button class="btn-add-set" onclick="addSetRow()">＋ セットを追加</button>
+      <div style="display:flex;gap:8px;margin-bottom:4px;">
+        <button class="btn-save-tpl" onclick="saveTemplate()">💾 テンプレート保存</button>
+        <button class="btn-open-timer" style="margin:0;flex:1;" onclick="openTimer()">⏱ レストタイマー</button>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <label>日付</label>
+        <input type="date" id="w-date">
+      </div>
+      <div class="field">
+        <label>メモ (任意)</label>
+        <textarea id="w-memo" placeholder="フォームの調子、気づきなど..."></textarea>
+      </div>
+      <div id="w-edit-banner" class="edit-banner" style="display:none;"></div>
+      <button class="btn btn-primary" id="w-save-btn" onclick="saveWeight()">REC ＋ 記録する</button>
+      <button class="btn btn-cancel" id="w-cancel-btn" onclick="cancelEdit('w')" style="display:none;">✕ キャンセル</button>
+    </div>
+    <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
+    <div id="w-recent"></div>
   </div>
 
-  <div class="card">
-    <div class="card-label" style="color:var(--amber);">Body Weight</div>
-    <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,149,0,.25) 50%, transparent);"></div>
-
-    <div class="row2" style="margin-bottom:12px;">
-      <div class="stat-field">
-        <label>体重</label>
-        <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1"
-               style="font-size:36px;color:var(--amber);text-align:center;">
-        <div class="stat-unit">kg</div>
+  <!-- 有酸素パネル -->
+  <div id="rec-cardio" class="rec-panel">
+    <div class="card">
+      <div class="card-label">Cardio</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(0,212,106,.25) 50%,transparent);"></div>
+      <div class="field">
+        <label>種類</label>
+        <select id="c-type">
+          <option>ランニング</option><option>ウォーキング</option>
+          <option>サイクリング</option><option>水泳</option>
+          <option>縄跳び</option><option>エリプティカル</option>
+          <option>ローイングマシン</option><option>HIIT</option>
+          <option>その他</option>
+        </select>
       </div>
-      <div class="stat-field">
-        <label>体脂肪率</label>
-        <input type="number" id="b-fat" placeholder="20.0" min="1" max="60" step="0.1"
-               style="font-size:36px;color:var(--accent2);text-align:center;">
-        <div class="stat-unit">%</div>
+      <div class="row2">
+        <div class="stat-field">
+          <label>時間</label>
+          <input type="number" id="c-duration" placeholder="30" min="1" style="color:var(--green);">
+          <div class="stat-unit">分</div>
+        </div>
+        <div class="stat-field">
+          <label>距離</label>
+          <input type="number" id="c-distance" placeholder="5.0" min="0" step="0.1" style="color:var(--green);">
+          <div class="stat-unit">km</div>
+        </div>
       </div>
+      <div class="field" style="margin-top:4px;">
+        <label>日付</label>
+        <input type="date" id="c-date">
+      </div>
+      <div id="c-edit-banner" class="edit-banner" style="display:none;"></div>
+      <button class="btn btn-green" id="c-save-btn" onclick="saveCardio()">REC ＋ 記録する</button>
+      <button class="btn btn-cancel" id="c-cancel-btn" onclick="cancelEdit('c')" style="display:none;">✕ キャンセル</button>
     </div>
-
-    <div class="field">
-      <label>日付</label>
-      <input type="date" id="b-date">
-    </div>
-
-    <div id="b-edit-banner" class="edit-banner" style="display:none;"></div>
-    <button class="btn btn-amber" id="b-save-btn" onclick="saveBody()">REC ＋ 記録する</button>
-    <button class="btn btn-cancel" id="b-cancel-btn" onclick="cancelEdit('b')" style="display:none;">✕ キャンセル</button>
+    <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
+    <div id="c-recent"></div>
   </div>
 
-  <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
-  <div id="b-recent"></div>
+  <!-- 体重パネル -->
+  <div id="rec-body" class="rec-panel">
+    <div id="bw-latest-card" class="card" style="display:none;">
+      <div class="card-label" style="color:var(--amber);">Current Weight</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(255,149,0,.25) 50%,transparent);"></div>
+      <div id="bw-latest"></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="color:var(--amber);">Body Weight</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(255,149,0,.25) 50%,transparent);"></div>
+      <div class="row2" style="margin-bottom:12px;">
+        <div class="stat-field">
+          <label>体重</label>
+          <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1"
+                 style="font-size:36px;color:var(--amber);text-align:center;">
+          <div class="stat-unit">kg</div>
+        </div>
+        <div class="stat-field">
+          <label>体脂肪率</label>
+          <input type="number" id="b-fat" placeholder="20.0" min="1" max="60" step="0.1"
+                 style="font-size:36px;color:var(--accent2);text-align:center;">
+          <div class="stat-unit">%</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="b-date">
+      </div>
+      <div id="b-edit-banner" class="edit-banner" style="display:none;"></div>
+      <button class="btn btn-amber" id="b-save-btn" onclick="saveBody()">REC ＋ 記録する</button>
+      <button class="btn btn-cancel" id="b-cancel-btn" onclick="cancelEdit('b')" style="display:none;">✕ キャンセル</button>
+    </div>
+    <div class="section-title" style="margin:8px 2px 12px;">最近のログ</div>
+    <div id="b-recent"></div>
+  </div>
+
+  <!-- フォトパネル -->
+  <div id="rec-photo" class="rec-panel">
+    <div class="card photo-upload-card">
+      <div class="card-label">Body Photo</div>
+      <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(255,45,85,.25) 50%,transparent);"></div>
+      <div class="field">
+        <label>撮影日</label>
+        <input type="date" id="photo-date">
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('photo-input').click()">
+        📷 写真を追加
+      </button>
+      <input type="file" id="photo-input" accept="image/*" style="display:none"
+             onchange="onPhotoSelected(this)">
+    </div>
+    <div id="photo-grid"></div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -1043,26 +1050,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   <div id="hist-list"></div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     VIEW: フォト
-════════════════════════════════════════ -->
-<div id="view-photo" class="view">
-  <div class="card photo-upload-card">
-    <div class="card-label">Body Photo</div>
-    <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,45,85,.25) 50%, transparent);"></div>
-    <div class="field">
-      <label>撮影日</label>
-      <input type="date" id="photo-date">
-    </div>
-    <button class="btn btn-primary" onclick="document.getElementById('photo-input').click()">
-      📷 写真を追加
-    </button>
-    <input type="file" id="photo-input" accept="image/*" style="display:none"
-           onchange="onPhotoSelected(this)">
-  </div>
-  <div id="photo-grid"></div>
-</div>
-
 <!-- PHOTO MODAL -->
 <div id="photo-modal" onclick="closePhotoModal(event)">
   <button class="photo-modal-close" onclick="document.getElementById('photo-modal').classList.remove('open')">✕</button>
@@ -1077,23 +1064,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   <div class="nav-item active" onclick="nav('home',this)">
     <span class="nav-icon">🏠</span>ホーム
   </div>
-  <div class="nav-item" onclick="nav('weight',this)">
-    <span class="nav-icon">💪</span>ウエイト
-  </div>
-  <div class="nav-item" onclick="nav('cardio',this)">
-    <span class="nav-icon">🏃</span>有酸素
-  </div>
-  <div class="nav-item" onclick="nav('body',this)">
-    <span class="nav-icon">⚖️</span>体重
-  </div>
-  <div class="nav-item" onclick="nav('graph',this)">
-    <span class="nav-icon">📈</span>グラフ
-  </div>
-  <div class="nav-item" onclick="nav('photo',this)">
-    <span class="nav-icon">📷</span>フォト
+  <div class="nav-item" onclick="nav('record',this)">
+    <span class="nav-icon">➕</span>記録
   </div>
   <div class="nav-item" onclick="nav('calendar',this)">
     <span class="nav-icon">📅</span>カレンダー
+  </div>
+  <div class="nav-item" onclick="nav('graph',this)">
+    <span class="nav-icon">📈</span>グラフ
   </div>
 </nav>
 
@@ -1251,17 +1229,27 @@ let editingId = { w: null, c: null, b: null };
 
 // 指定ビューに切り替える（ナビアイコンのactive状態も同期）
 function goToView(view) {
-  const VIEWS = ['home','weight','cardio','body','graph','photo','calendar'];
+  const VIEWS = ['home','record','calendar','graph'];
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', VIEWS[i] === view));
   document.getElementById('view-' + view).classList.add('active');
+}
+
+let curRecTab = 'weight';
+function switchRecTab(panel, el) {
+  curRecTab = panel;
+  document.querySelectorAll('.rec-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('rec-' + panel).classList.add('active');
+  document.querySelectorAll('[data-panel]').forEach(b => b.classList.remove('active'));
+  const btn = el || document.querySelector(`[data-panel="${panel}"]`);
+  if (btn) btn.classList.add('active');
+  if (panel === 'photo') renderPhotoGrid();
 }
 
 function nav(view, el) {
   goToView(view);
   if (view === 'home')     renderHome();
   if (view === 'graph')    { fillExSel(); setTimeout(drawBwChart, 80); }
-  if (view === 'photo')    renderPhotoGrid();
   if (view === 'calendar') { renderCalendar(); renderHistory(); }
 }
 
@@ -1310,7 +1298,7 @@ function editRecord(type, id) {
   editingId[type] = id;
 
   if (type === 'w') {
-    goToView('weight');
+    goToView('record'); switchRecTab('weight');
     document.getElementById('w-exercise').value = data.exercise || '';
     document.getElementById('w-date').value     = data.date     || today();
     document.getElementById('w-memo').value     = data.memo     || '';
@@ -1329,7 +1317,7 @@ function editRecord(type, id) {
     document.getElementById('w-save-btn').textContent = '✓ 更新する';
     document.getElementById('w-cancel-btn').style.display = 'block';
   } else if (type === 'c') {
-    goToView('cardio');
+    goToView('record'); switchRecTab('cardio');
     document.getElementById('c-type').value     = data.type     || 'ランニング';
     document.getElementById('c-duration').value = data.duration || '';
     document.getElementById('c-distance').value = data.distance || '';
@@ -1339,7 +1327,7 @@ function editRecord(type, id) {
     document.getElementById('c-save-btn').textContent = '✓ 更新する';
     document.getElementById('c-cancel-btn').style.display = 'block';
   } else if (type === 'b') {
-    goToView('body');
+    goToView('record'); switchRecTab('body');
     document.getElementById('b-weight').value = data.weight  || '';
     document.getElementById('b-fat').value    = data.fatPct  || '';
     document.getElementById('b-date').value   = data.date    || today();
