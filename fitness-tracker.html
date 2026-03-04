@@ -25,7 +25,6 @@
 :root {
   --accent:   #ff5500;
   --accent2:  #ff2d55;
-  --primary:  #ff5500;
   --green:    #00d46a;
   --amber:    #ff9500;
   --red:      #ff3b30;
@@ -281,7 +280,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 }
 .bottom-nav::-webkit-scrollbar { display: none; }
 .nav-item {
-  min-width: 62px; flex-shrink: 0; display: flex; flex-direction: column;
+  flex: 1; min-width: 52px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 3px;
   cursor: pointer; color: #383838;
   font-size: 9px; font-weight: 700; letter-spacing: .05em;
@@ -495,7 +494,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ DASHBOARD ═══════════ */
 .home-greeting { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
-.home-sub { font-size: 12px; color: var(--sub); font-weight: 700; letter-spacing: .04em; margin-bottom: 4px; }
 .home-streak-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .home-streak-mini {
   border-radius: 14px; padding: 12px 14px;
@@ -653,13 +651,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .monthly-num.green { color:var(--green); } .monthly-num.amber { color:var(--amber); }
 .monthly-label { font-size:9px; font-weight:800; color:var(--sub); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
 
-/* ═══════════ INSIGHTS ═══════════ */
-.insight-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
-.insight-row:last-child { border-bottom:none; }
-.insight-icon { font-size:26px; flex-shrink:0; }
-.insight-msg { font-size:13px; font-weight:700; color:var(--text); line-height:1.4; }
-.insight-sub { font-size:11px; color:var(--sub); margin-top:2px; }
-
 /* ═══════════ GOALS ═══════════ */
 .goal-item { margin-bottom:14px; } .goal-item:last-child { margin-bottom:0; }
 .goal-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; }
@@ -670,6 +661,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .goal-bar-fill.orange { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
 .goal-bar-fill.green  { background:linear-gradient(90deg,var(--green),#00b359); }
 .goal-bar-fill.amber  { background:linear-gradient(90deg,var(--amber),var(--accent)); }
+.goal-bar-fill.done   { background:linear-gradient(90deg,var(--green),#00d46a); }
 
 /* ═══════════ TIMER ═══════════ */
 .timer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.97); z-index:700; display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; }
@@ -713,6 +705,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .ob-dot.active { background:var(--accent); width:20px; border-radius:3px; }
 .ob-btn { width:100%; max-width:440px; padding:18px; border-radius:16px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-size:16px; font-weight:800; border:none; cursor:pointer; font-family:inherit; -webkit-appearance:none; box-shadow:0 8px 28px rgba(255,85,0,.4); letter-spacing:.05em; transition:transform .12s; }
 .ob-btn:active { transform:scale(.97); }
+
+/* ═══════════ HOME BODY WEIGHT ═══════════ */
+.bw-home-row { display:flex; align-items:baseline; gap:4px; flex-wrap:wrap; margin-top:6px; }
+.bw-home-num { font-size:42px; font-weight:900; letter-spacing:-1px; color:var(--amber); font-variant-numeric:tabular-nums; line-height:1; }
+.bw-home-unit { font-size:16px; color:var(--sub); font-weight:700; }
+.bw-home-fat { font-size:13px; color:var(--accent2); margin-left:6px; font-weight:700; }
+.bw-home-date { font-size:11px; color:var(--sub); margin-left:4px; }
+.bw-home-empty { font-size:12px; color:var(--sub); margin-top:4px; }
 
 /* ═══════════ INSIGHT BADGE ═══════════ */
 .insight-badge {
@@ -759,7 +759,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="home-greeting" id="home-greeting"></div>
     <div id="home-hero-bw" style="margin:6px 0 0;"></div>
     <div id="home-insight-badge" style="margin-top:10px;display:none;"></div>
-    <div class="home-streak-row" style="margin-top:14px;margin-bottom:0;">
+    <div class="glow-line" style="margin-top:16px;margin-bottom:14px;"></div>
+    <div class="home-streak-row" style="margin-bottom:0;">
       <div class="home-streak-mini" id="home-w-streak"></div>
       <div class="home-streak-mini green" id="home-c-streak"></div>
     </div>
@@ -2698,14 +2699,14 @@ function renderHome() {
   if (bRecs.length) {
     const cur = bRecs[0];
     heroBw.innerHTML = `
-      <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;">
-        <span style="font-size:42px;font-weight:900;letter-spacing:-1px;color:var(--amber);">${cur.weight}</span>
-        <span style="font-size:16px;color:var(--sub);font-weight:700;">kg</span>
-        ${cur.fatPct != null ? `<span style="font-size:13px;color:var(--accent2);margin-left:6px;font-weight:700;">体脂肪 ${cur.fatPct}%</span>` : ''}
-        <span style="font-size:11px;color:var(--sub);margin-left:4px;">${fmtDateFull(cur.date)}</span>
+      <div class="bw-home-row">
+        <span class="bw-home-num">${cur.weight}</span>
+        <span class="bw-home-unit">kg</span>
+        ${cur.fatPct != null ? `<span class="bw-home-fat">体脂肪 ${cur.fatPct}%</span>` : ''}
+        <span class="bw-home-date">${fmtDateFull(cur.date)}</span>
       </div>`;
   } else {
-    heroBw.innerHTML = `<div style="font-size:12px;color:var(--sub);margin:4px 0;">体重を記録すると表示されます</div>`;
+    heroBw.innerHTML = `<div class="bw-home-empty">体重を記録すると表示されます</div>`;
   }
 
   // インサイトバッジ
