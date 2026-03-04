@@ -751,9 +751,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 <div class="toast" id="toast"></div>
 
 <!-- ═══════════════════════════════════════
-     VIEW: ウエイトトレーニング
-════════════════════════════════════════ -->
-<!-- ═══════════════════════════════════════
      VIEW: ホーム（ダッシュボード）
 ════════════════════════════════════════ -->
 <div id="view-home" class="view active">
@@ -2020,10 +2017,12 @@ function renderGoals() {
   const bRecs = load(K.b).sort((a,b)=>b.date.localeCompare(a.date));
   const curW  = bRecs.length ? bRecs[0].weight : null;
   const el    = document.getElementById('home-goals');
+  const card = document.getElementById('home-goals-card');
   if (!g.targetWeight && !g.weeklyW && !g.weeklyC) {
-    el.innerHTML = `<div style="color:var(--sub);font-size:12px;padding:6px 0 2px;">まだ目標が設定されていません</div>`;
+    card.style.display = 'none';
     return;
   }
+  card.style.display = 'block';
   let html = '';
   if (g.targetWeight && curW) {
     const diff = curW - g.targetWeight;
@@ -2069,7 +2068,6 @@ function saveGoals() {
 ───────────────────────────────────────── */
 function generateInsights() {
   const wAll   = load(K.w);
-  const cAll   = load(K.c);
   const bAll   = load(K.b).sort((a,b) => a.date.localeCompare(b.date));
   const t      = today();
   const cut7   = daysAgo(7);
@@ -2090,11 +2088,13 @@ function generateInsights() {
     if (diff <= 0)              return [{ icon:'🎉', msg:`目標体重 ${goals.targetWeight}kg 達成！`, sub:`現在 ${cur}kg` }];
   }
 
-  // 3. 14日以上記録していない種目がある（サボり検知）
+  // 3. 14日以上記録していない種目がある（最も長く休んでいる種目）
   if (wAll.length) {
     const exMap = {};
     wAll.forEach(r => { if (!exMap[r.exercise] || r.date > exMap[r.exercise]) exMap[r.exercise] = r.date; });
-    const stale = Object.entries(exMap).find(([, d]) => d < cut14);
+    const stale = Object.entries(exMap)
+      .filter(([, d]) => d < cut14)
+      .sort((a, b) => a[1].localeCompare(b[1]))[0]; // 最も古い日付
     if (stale) return [{ icon:'💤', msg:`${stale[0]} が ${Math.round((new Date(t)-new Date(stale[1]))/(864e5))}日間お休み中`, sub:'そろそろ再開してみよう' }];
   }
 
@@ -2712,8 +2712,9 @@ function renderHome() {
   const ins = generateInsights();
   const badge = document.getElementById('home-insight-badge');
   if (ins.length) {
-    badge.style.display = 'flex';
-    badge.innerHTML = `<div class="insight-badge">${ins[0].icon} <span>${ins[0].msg}${ins[0].sub ? `<br><span style="font-weight:400;color:var(--sub);">${ins[0].sub}</span>` : ''}</span></div>`;
+    badge.className = 'insight-badge';
+    badge.style.display = 'inline-flex';
+    badge.innerHTML = `${ins[0].icon} <span>${ins[0].msg}${ins[0].sub ? `<br><span style="font-weight:400;color:var(--sub);">${ins[0].sub}</span>` : ''}</span>`;
   } else {
     badge.style.display = 'none';
   }
@@ -2748,21 +2749,36 @@ function renderHome() {
   // 目標
   renderGoals();
 
-  // PR Top 3
-  const prs = getTopPRs(3);
-  const prEl = document.getElementById('home-pr');
-  if (!prs.length) {
+  // PR Top 3（すべて見るで展開）
+  renderPRList(3);
+}
+
+function renderPRList(limit) {
+  const allPRs = getTopPRs(999);
+  const prEl   = document.getElementById('home-pr');
+  if (!allPRs.length) {
     prEl.innerHTML = `<div style="color:var(--sub);font-size:12px;padding:10px 0;">記録を追加するとPRが表示されます</div>`;
-  } else {
-    prEl.innerHTML = prs.map(p => `
-      <div class="pr-row">
-        <span class="pr-exercise">${esc(p.exercise)}</span>
-        <span>
-          <span class="pr-val">${p.weight}kg × ${p.reps}rep</span>
-          <div class="pr-date">${fmtDateFull(p.date)}</div>
-        </span>
-      </div>`).join('');
+    return;
   }
+  const show = allPRs.slice(0, limit);
+  const hasMore = allPRs.length > limit;
+  prEl.innerHTML = show.map(p => `
+    <div class="pr-row">
+      <span class="pr-exercise">${esc(p.exercise)}</span>
+      <span>
+        <span class="pr-val">${p.weight}kg × ${p.reps}rep</span>
+        <div class="pr-date">${fmtDateFull(p.date)}</div>
+      </span>
+    </div>`).join('') +
+    (hasMore
+      ? `<div style="text-align:center;margin-top:8px;">
+           <button class="btn-ghost" onclick="renderPRList(999)" style="font-size:11px;">▼ すべて見る（${allPRs.length}件）</button>
+         </div>`
+      : limit > 3
+        ? `<div style="text-align:center;margin-top:8px;">
+             <button class="btn-ghost" onclick="renderPRList(3)" style="font-size:11px;">▲ 閉じる</button>
+           </div>`
+        : '');
 }
 
 /* ─────────────────────────────────────────
