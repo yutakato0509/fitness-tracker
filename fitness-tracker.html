@@ -880,6 +880,33 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 /* ═══════════ GOALS ═══════════ */
 .goal-bar-bg { height:7px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden; }
 .goal-bar-fill { height:100%; border-radius:4px; transition:width .9s cubic-bezier(.25,.46,.45,.94); }
+
+/* ═══════════ FIELD CLEAR BTN ═══════════ */
+.field-wrap { position: relative; }
+.field-wrap input { padding-right: 40px; }
+.field-clear-btn {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.1); border: none; border-radius: 50%;
+  width: 24px; height: 24px; color: var(--sub); font-size: 11px; line-height: 1;
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  -webkit-appearance: none; transition: background .15s, color .15s;
+}
+.field-clear-btn.visible { display: flex; }
+.field-clear-btn:active { background: rgba(255,59,48,.25); color: var(--red); }
+
+/* ═══════════ ASSISTED REPS ═══════════ */
+.stat-field.assisted {
+  background: rgba(94,158,255,.05);
+  border-color: rgba(94,158,255,.15);
+}
+.stat-field.assisted:focus-within {
+  border-color: rgba(94,158,255,.45);
+  box-shadow: 0 0 0 3px rgba(94,158,255,.08);
+}
+.stat-field.assisted label { color: rgba(94,158,255,.55); }
+.stat-field.assisted input { color: #5e9eff; font-size: 24px; }
+.stat-field.assisted input::placeholder { color: rgba(94,158,255,.18); font-size: 20px; }
+.stat-field.assisted .stat-unit { color: rgba(94,158,255,.45); }
 </style>
 </head>
 <body>
@@ -966,8 +993,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       </div>
       <div class="field">
         <label>種目名</label>
-        <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
-               oninput="onExerciseInput(this.value)">
+        <div class="field-wrap">
+          <input type="text" id="w-exercise" list="ex-list" placeholder="例: ベンチプレス"
+                 oninput="onExerciseInput(this.value)">
+          <button class="field-clear-btn" id="w-exercise-clear" type="button" onclick="clearExercise()">✕</button>
+        </div>
         <datalist id="ex-list">
           <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
           <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
@@ -1412,6 +1442,7 @@ function sortDesc(arr) {
 function resetWForm() {
   editingId.w = null;
   document.getElementById('w-exercise').value = '';
+  document.getElementById('w-exercise-clear').classList.remove('visible');
   document.getElementById('w-date').value     = today();
   document.getElementById('w-memo').value     = '';
   document.getElementById('autofill-hint').style.display = 'none';
@@ -1457,7 +1488,7 @@ function editRecord(type, id) {
     document.getElementById('w-sets-container').innerHTML = '';
     setRowCount = 0;
     if (data.setData && data.setData.length) {
-      data.setData.forEach(s => addSetRow(s.weight || '', s.reps || ''));
+      data.setData.forEach(s => addSetRow(s.weight || '', s.reps || '', s.assisted || ''));
     } else {
       // 旧形式の互換対応
       const n = data.sets || 1;
@@ -1501,8 +1532,18 @@ function cancelEdit(type) {
    AUTO-FILL LAST EXERCISE
 ───────────────────────────────────────── */
 function onExerciseInput(val) {
+  document.getElementById('w-exercise-clear').classList.toggle('visible', val.length > 0);
   if (!val.trim()) { document.getElementById('autofill-hint').style.display='none'; return; }
   autofillSets(val.trim());
+}
+
+function clearExercise() {
+  document.getElementById('w-exercise').value = '';
+  document.getElementById('w-exercise-clear').classList.remove('visible');
+  document.getElementById('autofill-hint').style.display = 'none';
+  document.getElementById('w-sets-container').innerHTML = '';
+  setRowCount = 0;
+  addSetRow();
 }
 function autofillSets(exercise) {
   const records = load(K.w).filter(r => r.exercise === exercise);
@@ -1512,7 +1553,7 @@ function autofillSets(exercise) {
   document.getElementById('w-sets-container').innerHTML = '';
   setRowCount = 0;
   if (last.setData && last.setData.length) {
-    last.setData.forEach(s => addSetRow(s.weight || '', s.reps || ''));
+    last.setData.forEach(s => addSetRow(s.weight || '', s.reps || '', s.assisted || ''));
   } else {
     const n = last.sets || 1;
     for (let i = 0; i < n; i++) addSetRow(i === 0 ? (last.weight || '') : '', last.reps || '');
@@ -1577,7 +1618,7 @@ function renderWRecent() {
       const isPR = maxW > 0 ? maxW >= pr.weight : pr.weight === 0 && maxR >= pr.reps;
       numsHTML = `
         <div style="font-size:12px;color:var(--sub);margin-top:4px;line-height:1.7;">
-          ${sd.map((s,i) => `<span style="margin-right:8px;">${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回</span>`).join('')}
+          ${sd.map((s,i) => `<span style="margin-right:8px;">${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回${s.assisted > 0 ? `<span style="color:#5e9eff;font-size:10px;"> +${s.assisted}補</span>` : ''}</span>`).join('')}
         </div>
         ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}`;
     } else {
@@ -1806,7 +1847,7 @@ function histItem(r) {
     let detail;
     if (r.setData && r.setData.length) {
       const maxW = Math.max(...r.setData.map(s => s.weight || 0));
-      detail = r.setData.map((s,i) => `${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回`).join(' / ');
+      detail = r.setData.map((s,i) => `${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回${s.assisted > 0 ? ` +${s.assisted}補` : ''}`).join(' / ');
     } else {
       detail = `${r.weight > 0 ? r.weight+'kg × ' : '自重 × '}${r.reps}回 × ${r.sets}セット`;
     }
@@ -2118,7 +2159,7 @@ function _renderCalDayDetail(dateStr) {
   }
   let html = `<div class="card"><div class="card-label">📅 ${fmtDateFull(dateStr)}</div><div class="glow-line"></div>`;
   wRecs.forEach(r => {
-    const detail = r.setData ? r.setData.map((s,i)=>`${i+1}. ${s.weight>0?s.weight+'kg':'自重'} × ${s.reps}回`).join(' / ') : `${r.weight>0?r.weight+'kg':'自重'} × ${r.reps}回 × ${r.sets}セット`;
+    const detail = r.setData ? r.setData.map((s,i)=>`${i+1}. ${s.weight>0?s.weight+'kg':'自重'} × ${s.reps}回${s.assisted>0?` +${s.assisted}補`:''}`).join(' / ') : `${r.weight>0?r.weight+'kg':'自重'} × ${r.reps}回 × ${r.sets}セット`;
     html += `<div class="rec-item"><div class="rec-icon ic-w">💪</div><div class="rec-body"><div class="rec-title">${esc(r.exercise)}</div><div class="rec-detail">${detail}</div></div><div class="rec-right"><div class="rec-actions"><button class="btn-edit" onclick="editRecord('w','${r.id}')">編集</button><button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',()=>{_drawCalendar();renderHistory();})">DEL</button></div></div></div>`;
   });
   cRecs.forEach(r => {
@@ -2316,7 +2357,7 @@ function loadTemplate(id) {
   document.getElementById('w-exercise').value = tpl.exercise;
   document.getElementById('w-sets-container').innerHTML = '';
   setRowCount = 0;
-  tpl.setData.forEach(s => addSetRow(s.weight || '', s.reps || ''));
+  tpl.setData.forEach(s => addSetRow(s.weight || '', s.reps || '', s.assisted || ''));
   document.getElementById('autofill-hint').style.display = 'none';
   toast(`📋 「${tpl.name}」を読み込みました`);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2781,7 +2822,7 @@ async function undoDeletePhoto() {
 ───────────────────────────────────────── */
 let setRowCount = 0;
 
-function addSetRow(weight = '', reps = '') {
+function addSetRow(weight = '', reps = '', assisted = '') {
   setRowCount++;
   const n = setRowCount;
   const container = document.getElementById('w-sets-container');
@@ -2803,6 +2844,11 @@ function addSetRow(weight = '', reps = '') {
                style="font-size:22px;color:var(--text);">
         <div class="stat-unit">reps</div>
       </div>
+      <div class="stat-field assisted">
+        <label>補助</label>
+        <input type="number" class="set-assisted" value="${assisted}" placeholder="0" min="0">
+        <div class="stat-unit">reps</div>
+      </div>
     </div>
     <button class="set-del-btn" onclick="removeSetRow('set-row-${n}')">✕</button>`;
   container.appendChild(div);
@@ -2821,8 +2867,9 @@ function updateSetLabels() {
 }
 function getSetData() {
   return Array.from(document.querySelectorAll('#w-sets-container .set-row')).map(row => ({
-    weight: parseFloat(row.querySelector('.set-weight').value) || 0,
-    reps:   parseInt(row.querySelector('.set-reps').value)    || 0,
+    weight:   parseFloat(row.querySelector('.set-weight').value)   || 0,
+    reps:     parseInt(row.querySelector('.set-reps').value)       || 0,
+    assisted: parseInt(row.querySelector('.set-assisted').value)   || 0,
   })).filter(s => s.reps > 0);
 }
 
