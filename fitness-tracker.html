@@ -83,25 +83,26 @@ body {
 
 /* ═══════════ CARDS ═══════════ */
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px;
+  background: linear-gradient(160deg, #161616 0%, #0f0f0f 100%);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 22px;
+  padding: 20px;
   margin-bottom: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
 }
 .card-label {
-  font-size: 10px; font-weight: 800;
+  font-size: 10px; font-weight: 900;
   color: var(--accent);
-  text-transform: uppercase; letter-spacing: .12em;
+  text-transform: uppercase; letter-spacing: .14em;
   margin-bottom: 16px;
-  display: flex; align-items: center; gap: 7px;
+  display: flex; align-items: center; gap: 8px;
 }
 .card-label::before {
   content: '';
-  display: block; width: 10px; height: 2px;
+  display: block; width: 14px; height: 2px;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   border-radius: 1px;
+  box-shadow: 0 0 6px rgba(255,85,0,.5);
 }
 
 /* ═══════════ FORM ═══════════ */
@@ -112,16 +113,18 @@ body {
   text-transform: uppercase; letter-spacing: .08em;
 }
 .field input, .field select, .field textarea {
-  width: 100%; padding: 13px 14px;
-  border: 1.5px solid var(--border); border-radius: 12px;
-  font-size: 16px; color: var(--text); background: var(--input-bg);
-  outline: none; transition: border-color .2s, box-shadow .2s;
+  width: 100%; padding: 14px 16px;
+  border: 1.5px solid rgba(255,255,255,.08); border-radius: 14px;
+  font-size: 16px; color: var(--text);
+  background: rgba(255,255,255,.04);
+  outline: none; transition: border-color .2s, box-shadow .2s, background .2s;
   -webkit-appearance: none; font-family: inherit;
   font-variant-numeric: tabular-nums;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255,85,0,.15);
+  border-color: rgba(255,85,0,.5);
+  background: rgba(255,85,0,.04);
+  box-shadow: 0 0 0 3px rgba(255,85,0,.12);
 }
 .field textarea { resize: vertical; min-height: 68px; line-height: 1.6; }
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia(1) hue-rotate(0deg) saturate(3); cursor: pointer; }
@@ -136,25 +139,29 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ STAT INPUTS (row3 special style) ═══════════ */
 .stat-field {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 14px; padding: 12px 10px 10px; text-align: center;
-  position: relative;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px; padding: 14px 10px 12px; text-align: center;
+  position: relative; transition: border-color .2s;
+}
+.stat-field:focus-within {
+  border-color: rgba(255,85,0,.4);
+  box-shadow: 0 0 0 3px rgba(255,85,0,.08);
 }
 .stat-field label {
-  font-size: 9px; font-weight: 800; color: var(--sub);
-  text-transform: uppercase; letter-spacing: .1em;
-  display: block; margin-bottom: 6px;
+  font-size: 9px; font-weight: 900; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: .12em;
+  display: block; margin-bottom: 7px;
 }
 .stat-field input {
   background: transparent; border: none; box-shadow: none;
-  text-align: center; font-size: 28px; font-weight: 900;
+  text-align: center; font-size: 30px; font-weight: 900;
   color: var(--accent); padding: 0; line-height: 1;
   font-variant-numeric: tabular-nums; width: 100%;
 }
 .stat-field input:focus { border: none; box-shadow: none; }
-.stat-field input::placeholder { color: #333; font-size: 24px; }
+.stat-field input::placeholder { color: rgba(255,255,255,.12); font-size: 26px; }
 .stat-field .stat-unit {
-  font-size: 10px; color: var(--sub); font-weight: 700; margin-top: 3px;
+  font-size: 10px; color: var(--sub); font-weight: 800; margin-top: 4px; letter-spacing: .05em;
 }
 
 /* ═══════════ BUTTONS ═══════════ */
@@ -246,14 +253,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ SECTION TITLE ═══════════ */
 .section-title {
-  font-size: 11px; font-weight: 800; color: var(--sub);
-  margin: 8px 2px 12px;
+  font-size: 10px; font-weight: 900; color: rgba(255,255,255,.35);
+  margin: 10px 2px 12px;
   display: flex; align-items: center; gap: 10px;
-  text-transform: uppercase; letter-spacing: .1em;
+  text-transform: uppercase; letter-spacing: .14em;
 }
 .section-title::after {
   content: ''; flex: 1; height: 1px;
-  background: linear-gradient(90deg, var(--border), transparent);
+  background: linear-gradient(90deg, rgba(255,255,255,.08), transparent);
 }
 
 /* ═══════════ BODY WEIGHT HIGHLIGHT ═══════════ */
@@ -272,28 +279,36 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ FAB ═══════════ */
 .nav-item-fab .nav-icon {
-  width: 50px; height: 50px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  width: 54px; height: 54px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; line-height: 1;
-  box-shadow: 0 4px 18px rgba(255,85,0,.55);
-  margin-top: -14px;
-  transition: transform .2s, box-shadow .2s;
+  font-size: 24px; line-height: 1;
+  box-shadow: 0 4px 20px rgba(255,85,0,.6), 0 0 0 1px rgba(255,255,255,.1) inset;
+  margin-top: -16px;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
 }
-.nav-item-fab.active .nav-icon { box-shadow: 0 6px 24px rgba(255,85,0,.75); transform: scale(1.08); }
-.nav-item-fab.active { color: var(--text); }
+.nav-item-fab.active .nav-icon {
+  box-shadow: 0 8px 32px rgba(255,85,0,.85), 0 0 0 1px rgba(255,255,255,.15) inset;
+  transform: scale(1.12);
+}
+.nav-item-fab.active { color: #fff; }
 .nav-item-fab.active::after { display: none; }
+.nav-item-fab.active::before { display: none; }
 
 /* ═══════════ WEEK DOTS ═══════════ */
-.week-dots-row { display:flex; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
-.week-dot-item { display:flex; flex-direction:column; align-items:center; gap:5px; }
-.week-dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.07); border:1px solid #2a2a2a; transition:transform .2s; }
-.week-dot.has-w { background:var(--accent); border:none; }
-.week-dot.has-c { background:var(--green); border:none; }
-.week-dot.has-wc { background:linear-gradient(135deg,var(--accent),var(--green)); border:none; }
-.week-dot.is-today { outline:2px solid rgba(255,85,0,.4); outline-offset:2px; border-radius:50%; }
-.week-dot-label { font-size:9px; font-weight:800; color:var(--sub); }
+.week-dots-row { display:flex; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); }
+.week-dot-item { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.week-dot {
+  width: 11px; height: 11px; border-radius:50%;
+  background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+}
+.week-dot.has-w { background:var(--accent); border:none; box-shadow:0 0 8px rgba(255,85,0,.6); }
+.week-dot.has-c { background:var(--green); border:none; box-shadow:0 0 8px rgba(0,212,106,.6); }
+.week-dot.has-wc { background:linear-gradient(135deg,var(--accent),var(--green)); border:none; box-shadow:0 0 8px rgba(255,85,0,.4); }
+.week-dot.is-today { outline:2px solid rgba(255,85,0,.5); outline-offset:3px; border-radius:50%; transform:scale(1.2); }
+.week-dot-label { font-size:9px; font-weight:900; color:var(--sub); letter-spacing:.04em; }
 
 /* ═══════════ PR RANK ═══════════ */
 .pr-rank { font-size:18px; flex-shrink:0; margin-right:2px; }
@@ -310,62 +325,85 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-  background: #000; border-top: 1px solid #1a1a1a;
+  background: rgba(0,0,0,.92); border-top: 1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   display: flex; z-index: 200;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  overflow-x: auto; overflow-y: hidden;
+  overflow: visible;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .bottom-nav::-webkit-scrollbar { display: none; }
 .nav-item {
   flex: 1; min-width: 52px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 3px;
-  cursor: pointer; color: #383838;
-  font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  align-items: center; justify-content: center; gap: 4px;
+  cursor: pointer; color: #3a3a3a;
+  font-size: 9px; font-weight: 800; letter-spacing: .06em;
   user-select: none; -webkit-user-select: none;
   transition: color .2s; position: relative; text-transform: uppercase;
 }
-.nav-item .nav-icon { font-size: 21px; line-height: 1; transition: transform .2s filter .2s; }
-.nav-item.active { color: var(--accent); }
-.nav-item.active .nav-icon { transform: scale(1.18); filter: drop-shadow(0 0 6px rgba(255,85,0,.6)); }
+.nav-item .nav-icon {
+  font-size: 22px; line-height: 1;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), filter .2s;
+}
+.nav-item.active { color: #fff; }
+.nav-item.active .nav-icon {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 8px rgba(255,85,0,.7));
+}
 .nav-item.active::after {
   content: '';
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 28px; height: 2px;
+  width: 36px; height: 3px;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 0 12px rgba(255,85,0,.8), 0 0 24px rgba(255,85,0,.3);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; top: 6px;
+  width: 48px; height: 38px;
+  background: rgba(255,85,0,.08);
+  border-radius: 12px;
 }
 
 /* ═══════════ FILTER CHIPS ═══════════ */
 .chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chip {
-  padding: 8px 15px; border-radius: 20px;
-  border: 1.5px solid var(--border); font-size: 12px; font-weight: 700;
-  cursor: pointer; white-space: nowrap; background: var(--card); color: var(--sub);
-  transition: all .18s; letter-spacing: .03em;
+  padding: 8px 16px; border-radius: 22px;
+  border: 1.5px solid rgba(255,255,255,.08); font-size: 12px; font-weight: 800;
+  cursor: pointer; white-space: nowrap;
+  background: rgba(255,255,255,.04); color: var(--sub);
+  transition: all .2s; letter-spacing: .04em;
 }
 .chip.active {
-  border-color: var(--accent);
-  background: rgba(255,85,0,.12);
-  color: var(--accent);
+  border-color: rgba(255,85,0,.5);
+  background: rgba(255,85,0,.14);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255,85,0,.2);
 }
 
 /* ═══════════ GRAPH TABS ═══════════ */
 .tab-bar {
-  display: flex; background: var(--card2); border-radius: 13px;
-  padding: 4px; margin-bottom: 14px; border: 1px solid var(--border);
+  display: flex;
+  background: rgba(255,255,255,.03);
+  border-radius: 16px;
+  padding: 4px; margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  gap: 3px;
 }
 .tab-btn {
-  flex: 1; padding: 10px; border: none; border-radius: 10px;
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  background: transparent; color: var(--sub); transition: all .2s; font-family: inherit;
-  letter-spacing: .03em;
+  flex: 1; padding: 11px 6px; border: none; border-radius: 13px;
+  font-size: 12px; font-weight: 800; cursor: pointer;
+  background: transparent; color: var(--sub);
+  transition: all .22s cubic-bezier(.25,.46,.45,.94);
+  font-family: inherit; letter-spacing: .03em;
 }
 .tab-btn.active {
-  background: var(--card);
-  color: var(--accent);
-  box-shadow: 0 2px 10px rgba(0,0,0,.5);
+  background: linear-gradient(135deg, rgba(255,85,0,.2), rgba(255,45,85,.14));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,85,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
+  border: 1px solid rgba(255,85,0,.25);
 }
 
 /* ═══════════ CHART ═══════════ */
@@ -410,8 +448,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ GLOW LINE ═══════════ */
 .glow-line {
-  height: 1px; margin: 0 -18px 18px;
-  background: linear-gradient(90deg, transparent, rgba(255,85,0,.3) 40%, rgba(255,45,85,.3) 60%, transparent);
+  height: 1px; margin: 0 -20px 18px;
+  background: linear-gradient(90deg, transparent, rgba(255,85,0,.35) 35%, rgba(255,45,85,.35) 65%, transparent);
+  box-shadow: 0 0 8px rgba(255,85,0,.15);
 }
 
 /* ═══════════ EDIT MODE ═══════════ */
@@ -521,29 +560,45 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .btn-load-more:active { background: var(--card2); }
 
 /* ═══════════ PERIOD FILTER ═══════════ */
-.period-group { display: flex; gap: 4px; margin-bottom: 12px; justify-content: flex-end; }
+.period-group { display: flex; gap: 5px; margin-bottom: 14px; justify-content: flex-end; }
 .period-btn {
-  padding: 5px 11px; border-radius: 7px;
-  border: 1px solid var(--border); font-size: 10px; font-weight: 800;
-  cursor: pointer; background: transparent; color: var(--sub);
-  transition: all .18s; font-family: inherit; -webkit-appearance: none; letter-spacing: .02em;
+  padding: 6px 14px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08); font-size: 10px; font-weight: 900;
+  cursor: pointer; background: rgba(255,255,255,.03); color: var(--sub);
+  transition: all .18s; font-family: inherit; -webkit-appearance: none;
+  letter-spacing: .05em; text-transform: uppercase;
 }
-.period-btn.active { background: rgba(255,85,0,.12); border-color: var(--accent); color: var(--accent); }
+.period-btn.active {
+  background: rgba(255,85,0,.15);
+  border-color: rgba(255,85,0,.4);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(255,85,0,.2);
+}
 
 /* ═══════════ DASHBOARD ═══════════ */
-.home-greeting { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+.home-greeting { font-size: 14px; font-weight: 700; color: var(--sub); margin-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
 .home-streak-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .home-streak-mini {
-  border-radius: 14px; padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(255,85,0,.1), rgba(255,45,85,.06));
-  border: 1px solid rgba(255,85,0,.2);
+  border-radius: 18px; padding: 16px 14px;
+  background: linear-gradient(145deg, rgba(255,85,0,.12), rgba(255,45,85,.06));
+  border: 1px solid rgba(255,85,0,.22);
+  position: relative; overflow: hidden;
+}
+.home-streak-mini::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle, rgba(255,85,0,.15), transparent 70%);
 }
 .home-streak-mini.green {
-  background: linear-gradient(135deg, rgba(0,212,106,.1), rgba(0,179,89,.06));
-  border-color: rgba(0,212,106,.2);
+  background: linear-gradient(145deg, rgba(0,212,106,.12), rgba(0,179,89,.06));
+  border-color: rgba(0,212,106,.22);
+}
+.home-streak-mini.green::after {
+  background: radial-gradient(circle, rgba(0,212,106,.15), transparent 70%);
 }
 .home-streak-mini-num {
-  font-size: 32px; font-weight: 900; line-height: 1;
+  font-size: 48px; font-weight: 900; line-height: .9;
   background: linear-gradient(135deg, #ff5500, #ff2d55);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   font-variant-numeric: tabular-nums;
@@ -552,15 +607,15 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   background: linear-gradient(135deg, #00d46a, #00b359);
   -webkit-background-clip: text; background-clip: text;
 }
-.home-streak-mini-label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .06em; margin-top: 3px; }
-.home-streak-mini-msg { font-size: 11px; font-weight: 700; color: var(--text); margin-top: 3px; }
+.home-streak-mini-label { font-size: 9px; font-weight: 900; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; margin-top: 6px; }
+.home-streak-mini-msg { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.6); margin-top: 4px; line-height: 1.4; }
 .home-week-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .home-week-item {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 10px 8px; text-align: center;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px; padding: 12px 8px; text-align: center;
 }
-.home-week-num { font-size: 22px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.1; }
-.home-week-label { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.home-week-num { font-size: 26px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.home-week-label { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .05em; margin-top: 5px; }
 .pr-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 0; border-bottom: 1px solid var(--border);
@@ -572,10 +627,11 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ PR BADGE ═══════════ */
 .pr-badge {
-  display: inline-block; font-size: 9px; font-weight: 800; color: #fff;
-  background: linear-gradient(135deg, var(--amber), var(--accent));
-  border-radius: 5px; padding: 2px 6px; margin-left: 5px;
+  display: inline-block; font-size: 9px; font-weight: 900; color: #fff;
+  background: linear-gradient(135deg, #ffd60a, var(--amber));
+  border-radius: 6px; padding: 2px 7px; margin-left: 6px;
   letter-spacing: .04em; vertical-align: middle;
+  box-shadow: 0 2px 8px rgba(255,149,0,.4);
 }
 
 /* ═══════════ SET ROWS ═══════════ */
@@ -664,26 +720,46 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ CALENDAR ═══════════ */
 .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.cal-nav-btn { background:var(--card2); border:1px solid var(--border); color:var(--text); font-size:20px; width:40px; height:40px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-appearance:none; transition:background .15s; }
-.cal-nav-btn:active { background:rgba(255,85,0,.12); }
-.cal-month-title { font-size:18px; font-weight:900; color:var(--text); }
-.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-.cal-dow { text-align:center; font-size:9px; font-weight:800; color:var(--sub); padding:4px 0 10px; letter-spacing:.05em; }
-.cal-dow.sun { color:var(--red); } .cal-dow.sat { color:#5e9eff; }
-.cal-cell { aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; transition:background .15s; }
-.cal-cell:active { background:var(--card2); } .cal-cell.empty { cursor:default; pointer-events:none; }
-.cal-num { font-size:13px; font-weight:800; color:var(--text); line-height:1; }
-.cal-cell.today { background:rgba(255,85,0,.1); border:1px solid rgba(255,85,0,.3); }
+.cal-nav-btn {
+  background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  color:var(--text); font-size:20px; width:42px; height:42px; border-radius:13px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  -webkit-appearance:none; transition:all .15s;
+}
+.cal-nav-btn:active { background:rgba(255,85,0,.15); border-color:rgba(255,85,0,.3); }
+.cal-month-title { font-size:20px; font-weight:900; color:var(--text); letter-spacing:-.3px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-dow { text-align:center; font-size:9px; font-weight:900; color:var(--sub); padding:4px 0 12px; letter-spacing:.06em; text-transform:uppercase; }
+.cal-dow.sun { color:rgba(255,59,48,.7); } .cal-dow.sat { color:rgba(94,158,255,.7); }
+.cal-cell {
+  aspect-ratio:1; border-radius:12px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+  cursor:pointer; transition:all .18s; position:relative;
+}
+.cal-cell:active { transform:scale(.93); } .cal-cell.empty { cursor:default; pointer-events:none; }
+.cal-num { font-size:15px; font-weight:900; color:var(--text); line-height:1; }
+.cal-cell.today {
+  background: rgba(255,85,0,.14);
+  border:1.5px solid rgba(255,85,0,.45);
+  box-shadow: 0 0 12px rgba(255,85,0,.2);
+}
 .cal-cell.today .cal-num { color:var(--accent); }
-.cal-cell.col-0 .cal-num { color:var(--red); } .cal-cell.col-6 .cal-num { color:#5e9eff; }
-.cal-cell.other-month .cal-num { opacity:.2; }
-.cal-cell.selected { background:rgba(255,85,0,.08) !important; border:1px solid rgba(255,85,0,.25) !important; }
-.cal-dots { display:flex; gap:2px; justify-content:center; }
-.cal-dot { width:7px; height:7px; border-radius:50%; }
-.cal-dot-w { background:var(--accent); } .cal-dot-c { background:var(--green); } .cal-dot-b { background:var(--amber); }
-.cal-cell.has-w { background:rgba(255,85,0,.07); }
-.cal-cell.has-c { background:rgba(0,212,106,.07); }
-.cal-cell.has-wc { background:linear-gradient(135deg,rgba(255,85,0,.08),rgba(0,212,106,.08)); }
+.cal-cell.col-0 .cal-num { color:rgba(255,59,48,.8); }
+.cal-cell.col-6 .cal-num { color:rgba(94,158,255,.8); }
+.cal-cell.other-month .cal-num { opacity:.18; }
+.cal-cell.selected {
+  background:rgba(255,85,0,.12) !important;
+  border:1.5px solid rgba(255,85,0,.4) !important;
+  box-shadow: 0 0 10px rgba(255,85,0,.15) !important;
+}
+.cal-dots { display:flex; gap:3px; justify-content:center; }
+.cal-dot { width:5px; height:5px; border-radius:50%; }
+.cal-dot-w { background:var(--accent); box-shadow:0 0 4px rgba(255,85,0,.6); }
+.cal-dot-c { background:var(--green); box-shadow:0 0 4px rgba(0,212,106,.6); }
+.cal-dot-b { background:var(--amber); box-shadow:0 0 4px rgba(255,149,0,.6); }
+.cal-cell.has-w { background:rgba(255,85,0,.09); }
+.cal-cell.has-c { background:rgba(0,212,106,.09); }
+.cal-cell.has-wc { background:linear-gradient(135deg,rgba(255,85,0,.1),rgba(0,212,106,.1)); }
 
 /* ═══════════ MONTHLY REPORT ═══════════ */
 .monthly-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
@@ -748,19 +824,26 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .ob-btn:active { transform:scale(.97); }
 
 /* ═══════════ HOME BODY WEIGHT ═══════════ */
-.bw-home-row { display:flex; align-items:baseline; gap:4px; flex-wrap:wrap; margin-top:6px; }
-.bw-home-num { font-size:42px; font-weight:900; letter-spacing:-1px; color:var(--amber); font-variant-numeric:tabular-nums; line-height:1; }
-.bw-home-unit { font-size:16px; color:var(--sub); font-weight:700; }
-.bw-home-fat { font-size:13px; color:var(--accent2); margin-left:6px; font-weight:700; }
-.bw-home-date { font-size:11px; color:var(--sub); margin-left:4px; }
-.bw-home-empty { font-size:12px; color:var(--sub); margin-top:4px; }
+.bw-home-row { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; margin-top:4px; }
+.bw-home-num {
+  font-size: 72px; font-weight: 900; letter-spacing: -3px;
+  background: linear-gradient(135deg, #ff9500 0%, #ff6a00 60%, #ff5500 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-variant-numeric: tabular-nums; line-height: .9;
+}
+.bw-home-unit { font-size:20px; color:var(--sub); font-weight:800; margin-bottom:4px; }
+.bw-home-fat { font-size:14px; color:var(--accent2); margin-left:4px; font-weight:800; }
+.bw-home-date { font-size:11px; color:var(--sub); margin-left:2px; }
+.bw-home-empty { font-size:12px; color:var(--sub); margin-top:8px; font-weight:700; letter-spacing:.04em; }
 
 /* ═══════════ INSIGHT BADGE ═══════════ */
 .insight-badge {
-  display:inline-flex; align-items:center; gap:7px;
-  background:rgba(255,85,0,.07); border:1px solid rgba(255,85,0,.18);
-  border-radius:9px; padding:8px 12px; width:100%;
-  font-size:12px; font-weight:700; color:var(--text); line-height:1.4;
+  display:inline-flex; align-items:center; gap:10px;
+  background: linear-gradient(135deg, rgba(255,85,0,.1), rgba(255,45,85,.06));
+  border:1px solid rgba(255,85,0,.2);
+  border-radius:14px; padding:12px 14px; width:100%;
+  font-size:13px; font-weight:700; color:var(--text); line-height:1.4;
+  box-shadow: 0 4px 16px rgba(255,85,0,.1);
 }
 
 /* ═══════════ GOAL MODAL ═══════════ */
@@ -768,6 +851,51 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .goal-modal-overlay.open { display:flex; }
 .goal-modal-sheet { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px)); width:100%; max-width:480px; }
 .goal-modal-title { font-size:16px; font-weight:900; color:var(--text); margin-bottom:18px; }
+
+/* ═══════════ HOME HERO CARD ═══════════ */
+#view-home > .card:first-child {
+  background: linear-gradient(160deg, rgba(255,85,0,.1) 0%, rgba(255,45,85,.06) 25%, #0f0f0f 65%);
+  border-color: rgba(255,85,0,.2);
+  box-shadow: 0 12px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(255,85,0,.08) inset;
+}
+
+/* ═══════════ MONTHLY REPORT CARDS ═══════════ */
+.monthly-item {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; padding: 14px 14px;
+}
+.monthly-num { font-size:28px; font-weight:900; color:var(--accent); line-height:1.1; font-variant-numeric:tabular-nums; }
+
+/* ═══════════ REC CARD リデザイン ═══════════ */
+.rec-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+/* ═══════════ HIST SEP ═══════════ */
+.hist-sep {
+  font-size: 10px; font-weight: 900; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: .12em;
+  margin-bottom: 8px; padding: 0 2px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hist-sep::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.07); }
+
+/* ═══════════ PR ROW ═══════════ */
+.pr-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.pr-row:last-child { border-bottom: none; }
+.pr-val { font-size:13px; font-weight:900; color:var(--accent); white-space:nowrap; }
+
+/* ═══════════ GOALS ═══════════ */
+.goal-bar-bg { height:7px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden; }
+.goal-bar-fill { height:100%; border-radius:4px; transition:width .9s cubic-bezier(.25,.46,.45,.94); }
 </style>
 </head>
 <body>
@@ -798,9 +926,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   <!-- Hero: greeting + 体重 + insight + streaks -->
   <div class="card">
     <div class="home-greeting" id="home-greeting"></div>
-    <div id="home-hero-bw" style="margin:6px 0 0;"></div>
-    <div id="home-insight-badge" style="margin-top:10px;display:none;"></div>
-    <div class="glow-line" style="margin-top:16px;margin-bottom:14px;"></div>
+    <div id="home-hero-bw" style="margin:2px 0 12px;"></div>
+    <div id="home-insight-badge" style="display:none;"></div>
+    <div class="glow-line" style="margin-top:18px;margin-bottom:14px;"></div>
     <div class="home-streak-row" style="margin-bottom:0;">
       <div class="home-streak-mini" id="home-w-streak"></div>
       <div class="home-streak-mini green" id="home-c-streak"></div>
@@ -809,7 +937,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
   <!-- This Week -->
   <div class="card">
-    <div class="card-label">This Week</div>
+    <div class="card-label">📅 This Week</div>
     <div class="glow-line"></div>
     <div class="home-week-grid" id="home-week"></div>
   </div>
@@ -900,13 +1028,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="glow-line" style="background:linear-gradient(90deg,transparent,rgba(0,212,106,.25) 50%,transparent);"></div>
       <div class="field">
         <label>種類</label>
-        <select id="c-type">
-          <option>ランニング</option><option>ウォーキング</option>
-          <option>サイクリング</option><option>水泳</option>
-          <option>縄跳び</option><option>エリプティカル</option>
-          <option>ローイングマシン</option><option>HIIT</option>
-          <option>その他</option>
-        </select>
+        <input type="text" id="c-type" list="cardio-type-list" placeholder="例: ランニング">
+        <datalist id="cardio-type-list">
+          <option value="ランニング"><option value="ウォーキング"><option value="サイクリング">
+          <option value="水泳"><option value="縄跳び"><option value="エリプティカル">
+          <option value="ローイングマシン"><option value="HIIT"><option value="バイク">
+        </datalist>
       </div>
       <div class="row2">
         <div class="stat-field">
@@ -1313,6 +1440,7 @@ function resetWForm() {
 }
 function resetCForm() {
   editingId.c = null;
+  document.getElementById('c-type').value     = '';
   document.getElementById('c-duration').value = '';
   document.getElementById('c-distance').value = '';
   document.getElementById('c-date').value     = today();
@@ -1417,9 +1545,9 @@ function saveWeight() {
   const memo     = document.getElementById('w-memo').value.trim();
   const setData  = getSetData();
 
-  if (!exercise)       { alert('種目名を入力してください'); return; }
-  if (!date)           { alert('日付を入力してください'); return; }
-  if (!setData.length) { alert('少なくとも1セット入力してください'); return; }
+  if (!exercise)       { toast('⚠️ 種目名を入力してください'); return; }
+  if (!date)           { toast('⚠️ 日付を入力してください'); return; }
+  if (!setData.length) { toast('⚠️ 少なくとも1セット入力してください'); return; }
 
   const arr = load(K.w);
   if (editingId.w) {
@@ -1443,11 +1571,15 @@ function renderWRecent() {
   const el   = document.getElementById('w-recent');
   if (!all.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
 
-  // PR計算: 種目ごとの最高重量
+  // PR計算: 種目ごとの最高重量（自重種目は最多回数）
   const prMap = {};
   all.forEach(r => {
-    const maxW = r.setData ? Math.max(...r.setData.map(s => s.weight || 0)) : (r.weight || 0);
-    if (!prMap[r.exercise] || maxW > prMap[r.exercise]) prMap[r.exercise] = maxW;
+    if (!prMap[r.exercise]) prMap[r.exercise] = { weight: 0, reps: 0 };
+    const sets = r.setData || [{ weight: r.weight || 0, reps: r.reps || 0 }];
+    sets.forEach(s => {
+      if ((s.weight || 0) > prMap[r.exercise].weight) prMap[r.exercise].weight = s.weight || 0;
+      if ((s.reps   || 0) > prMap[r.exercise].reps)   prMap[r.exercise].reps   = s.reps   || 0;
+    });
   });
 
   el.innerHTML = recs.map(r => {
@@ -1455,17 +1587,20 @@ function renderWRecent() {
     let numsHTML, vol;
     if (sd && sd.length) {
       const maxW = Math.max(...sd.map(s => s.weight || 0));
+      const maxR = Math.max(...sd.map(s => s.reps   || 0));
       vol = sd.reduce((a, s) => a + (s.weight || 0) * (s.reps || 0), 0);
-      const isPR = maxW > 0 && maxW >= prMap[r.exercise];
+      const pr  = prMap[r.exercise];
+      const isPR = maxW > 0 ? maxW >= pr.weight : pr.weight === 0 && maxR >= pr.reps;
       numsHTML = `
         <div style="font-size:12px;color:var(--sub);margin-top:4px;line-height:1.7;">
           ${sd.map((s,i) => `<span style="margin-right:8px;">${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回</span>`).join('')}
         </div>
         ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}`;
     } else {
-      const wt = r.weight > 0;
+      const wt  = r.weight > 0;
       vol = wt ? r.weight * r.reps * r.sets : null;
-      const isPR = wt && r.weight >= prMap[r.exercise];
+      const pr  = prMap[r.exercise];
+      const isPR = wt ? r.weight >= pr.weight : pr.weight === 0 && (r.reps || 0) >= pr.reps;
       numsHTML = `
         <div class="rec-card-nums">
           ${wt ? `<span class="rec-num">${r.weight}</span><span class="rec-unit">kg</span><span class="rec-sep">×</span>` : '<span class="rec-unit">自重</span><span class="rec-sep">×</span>'}
@@ -1503,8 +1638,8 @@ function saveCardio() {
   const duration = parseInt(document.getElementById('c-duration').value);
   const distance = parseFloat(document.getElementById('c-distance').value);
   const date     = document.getElementById('c-date').value;
-  if (!date)                   { alert('日付を入力してください'); return; }
-  if (!duration || duration<1) { alert('時間を入力してください'); return; }
+  if (!date)                   { toast('⚠️ 日付を入力してください'); return; }
+  if (!duration || duration<1) { toast('⚠️ 時間を入力してください'); return; }
 
   const arr = load(K.c);
   if (editingId.c) {
@@ -1560,8 +1695,8 @@ function saveBody() {
   const fatPct = parseFloat(document.getElementById('b-fat').value);
   const date   = document.getElementById('b-date').value;
 
-  if (!date)               { alert('日付を入力してください'); return; }
-  if (isNaN(weight)||weight<=0) { alert('体重を入力してください'); return; }
+  if (!date)               { toast('⚠️ 日付を入力してください'); return; }
+  if (isNaN(weight)||weight<=0) { toast('⚠️ 体重を入力してください'); return; }
 
   const fat = isNaN(fatPct) ? null : fatPct;
   const arr = load(K.b);
@@ -2000,13 +2135,13 @@ function _renderCalDayDetail(dateStr) {
   let html = `<div class="card"><div class="card-label">📅 ${fmtDateFull(dateStr)}</div><div class="glow-line"></div>`;
   wRecs.forEach(r => {
     const detail = r.setData ? r.setData.map((s,i)=>`${i+1}. ${s.weight>0?s.weight+'kg':'自重'} × ${s.reps}回`).join(' / ') : `${r.weight>0?r.weight+'kg':'自重'} × ${r.reps}回 × ${r.sets}セット`;
-    html += `<div class="rec-item"><div class="rec-icon ic-w">💪</div><div class="rec-body"><div class="rec-title">${esc(r.exercise)}</div><div class="rec-detail">${detail}</div></div></div>`;
+    html += `<div class="rec-item"><div class="rec-icon ic-w">💪</div><div class="rec-body"><div class="rec-title">${esc(r.exercise)}</div><div class="rec-detail">${detail}</div></div><div class="rec-right"><div class="rec-actions"><button class="btn-edit" onclick="editRecord('w','${r.id}')">編集</button><button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',()=>{_drawCalendar();renderHistory();})">DEL</button></div></div></div>`;
   });
   cRecs.forEach(r => {
-    html += `<div class="rec-item"><div class="rec-icon ic-c">🏃</div><div class="rec-body"><div class="rec-title">${esc(r.type)}</div><div class="rec-detail">${r.duration}分${r.distance>0?' · '+r.distance+'km':''}</div></div></div>`;
+    html += `<div class="rec-item"><div class="rec-icon ic-c">🏃</div><div class="rec-body"><div class="rec-title">${esc(r.type)}</div><div class="rec-detail">${r.duration}分${r.distance>0?' · '+r.distance+'km':''}</div></div><div class="rec-right"><div class="rec-actions"><button class="btn-edit" onclick="editRecord('c','${r.id}')">編集</button><button class="btn btn-ghost" onclick="delRec('${K.c}','${r.id}',()=>{_drawCalendar();renderHistory();})">DEL</button></div></div></div>`;
   });
   bRecs.forEach(r => {
-    html += `<div class="rec-item"><div class="rec-icon ic-b">⚖️</div><div class="rec-body"><div class="rec-title">体重</div><div class="rec-detail">${r.weight}kg${r.fatPct!=null?' · 体脂肪 '+r.fatPct+'%':''}</div></div></div>`;
+    html += `<div class="rec-item"><div class="rec-icon ic-b">⚖️</div><div class="rec-body"><div class="rec-title">体重</div><div class="rec-detail">${r.weight}kg${r.fatPct!=null?' · 体脂肪 '+r.fatPct+'%':''}</div></div><div class="rec-right"><div class="rec-actions"><button class="btn-edit" onclick="editRecord('b','${r.id}')">編集</button><button class="btn btn-ghost" onclick="delRec('${K.b}','${r.id}',()=>{_drawCalendar();renderHistory();})">DEL</button></div></div></div>`;
   });
   el.innerHTML = html + '</div>';
 }
@@ -2054,10 +2189,20 @@ function renderGoals() {
   card.style.display = 'block';
   let html = '';
   if (g.targetWeight && curW) {
-    const diff = curW - g.targetWeight;
-    const pct  = Math.max(0, Math.min(100, diff >= 0 ? (1 - diff/10)*100 : 100));
-    const done = diff <= 0;
-    html += `<div class="goal-item"><div class="goal-header"><span class="goal-name">⚖️ 目標体重</span><span class="goal-prog">${curW}kg → ${g.targetWeight}kg</span></div><div class="goal-bar-bg"><div class="goal-bar-fill ${done?'done':'amber'}" style="width:${pct}%;"></div></div></div>`;
+    const startW = bRecs.length >= 2 ? bRecs[bRecs.length - 1].weight : null;
+    const isLoss = startW !== null ? g.targetWeight < startW : g.targetWeight < curW;
+    const done   = isLoss ? curW <= g.targetWeight : curW >= g.targetWeight;
+    let pct;
+    if (done) {
+      pct = 100;
+    } else if (startW !== null) {
+      const totalDiff = Math.abs(g.targetWeight - startW);
+      const doneDiff  = Math.abs(curW - startW);
+      pct = totalDiff > 0 ? Math.min(99, Math.round(doneDiff / totalDiff * 100)) : 0;
+    } else {
+      pct = 0;
+    }
+    html += `<div class="goal-item"><div class="goal-header"><span class="goal-name">⚖️ 目標体重</span><span class="goal-prog">${curW}kg → ${g.targetWeight}kg</span></div><div class="goal-bar-bg"><div class="goal-bar-fill ${done?'done':isLoss?'amber':'green'}" style="width:${pct}%;"></div></div></div>`;
   }
   if (g.weeklyW) {
     const pct = Math.min(100, (wDays / g.weeklyW) * 100);
@@ -2185,7 +2330,6 @@ function loadTemplate(id) {
   const tpl = load(K.tpl).find(t => t.id === id);
   if (!tpl) return;
   document.getElementById('w-exercise').value = tpl.exercise;
-  updateHeartBtn(tpl.exercise);
   document.getElementById('w-sets-container').innerHTML = '';
   setRowCount = 0;
   tpl.setData.forEach(s => addSetRow(s.weight || '', s.reps || ''));
@@ -2329,8 +2473,15 @@ function setPeriodCardio(p, el) {
 }
 function drawCardioChart() {
   if (cardioChart) { cardioChart.destroy(); cardioChart = null; }
-  const all  = load(K.c).sort((a,b) => a.date.localeCompare(b.date));
-  const recs = filterByPeriod(all, graphPeriod.cardio)
+  const all      = load(K.c).sort((a,b) => a.date.localeCompare(b.date));
+  const filtered = filterByPeriod(all, graphPeriod.cardio);
+  const byDate   = {};
+  filtered.forEach(r => {
+    if (!byDate[r.date]) byDate[r.date] = { duration: 0, distance: 0 };
+    byDate[r.date].duration += r.duration || 0;
+    byDate[r.date].distance += r.distance || 0;
+  });
+  const recs = Object.keys(byDate).sort().map(d => ({ date: d, ...byDate[d] }))
     .filter(r => cardioMetric === 'distance' ? r.distance > 0 : r.duration > 0);
   const canvas = resetChartWrap('cardio-chart-wrap','cardio-chart');
 
@@ -2580,7 +2731,7 @@ async function renderPhotoGrid() {
         ${grouped[date].map(p => `
           <div class="photo-thumb" onclick="openPhotoModal('${p.id}')">
             <img src="${esc(p.src)}" alt="${esc(date)}" loading="lazy">
-            <button class="photo-del-btn" onclick="event.stopPropagation();confirmDelPhoto('${p.id}')">✕</button>
+            <button class="photo-del-btn" onclick="event.stopPropagation();deletePhoto('${p.id}')">✕</button>
           </div>
         `).join('')}
       </div>
@@ -2601,21 +2752,43 @@ function closePhotoModal(e) {
   document.getElementById('photo-modal').classList.remove('open');
 }
 
-async function confirmDelPhoto(id) {
-  if (!confirm('この写真を削除しますか？')) return;
+let _deletedPhoto = null;
+
+async function deletePhoto(id) {
   const cached = photoCache[id];
+  const allPhotos = await dbAll();
+  const record = allPhotos.find(p => p.id === id);
+  _deletedPhoto = { id, record, cached };
   await dbDel(id);
-  if (fbStorage && fbAuth && fbAuth.currentUser && cached && cached.storageUrl) {
-    try {
-      await fbStorage.refFromURL(cached.storageUrl).delete();
-      const ref = fbDb.collection('users').doc(fbAuth.currentUser.uid);
-      const doc = await ref.get();
-      if (doc.exists) {
-        await ref.update({ photos: (doc.data().photos || []).filter(p => p.id !== id) });
-      }
-    } catch (e) { console.error('Photo delete error:', e); }
-  }
-  toast('🗑️ 削除しました');
+  clearTimeout(_toastTimer);
+  clearTimeout(_deleteTimer);
+  const el = document.getElementById('toast');
+  el.innerHTML = '🗑️ 写真を削除しました <button class="undo-btn" onclick="undoDeletePhoto()">元に戻す</button>';
+  el.classList.add('show');
+  _deleteTimer = setTimeout(async () => {
+    el.classList.remove('show');
+    if (!_deletedPhoto) return;
+    if (cached?.storageUrl && fbStorage && fbAuth?.currentUser) {
+      try {
+        await fbStorage.refFromURL(cached.storageUrl).delete();
+        const ref = fbDb.collection('users').doc(fbAuth.currentUser.uid);
+        const doc = await ref.get();
+        if (doc.exists) await ref.update({ photos: (doc.data().photos || []).filter(p => p.id !== id) });
+      } catch(e) {}
+    }
+    _deletedPhoto = null;
+  }, 4500);
+  renderPhotoGrid();
+}
+
+async function undoDeletePhoto() {
+  if (!_deletedPhoto) return;
+  clearTimeout(_deleteTimer);
+  const { record } = _deletedPhoto;
+  _deletedPhoto = null;
+  if (record) await dbAdd(record);
+  document.getElementById('toast').classList.remove('show');
+  toast('↩️ 元に戻しました');
   renderPhotoGrid();
 }
 
@@ -2755,7 +2928,7 @@ function renderHome() {
     const lbl = type === 'w' ? '💪 ウエイト' : '🏃 有酸素';
     el.innerHTML = `
       <div class="home-streak-mini-num">${n}</div>
-      <div class="home-streak-mini-label">${lbl} streak</div>
+      <div class="home-streak-mini-label">${lbl} / 週連続</div>
       <div class="home-streak-mini-msg">${streakMsg(n, type)}</div>`;
   });
 
@@ -2838,27 +3011,31 @@ function prevDay(dateStr) {
 }
 
 function calcStreak(records) {
-  const dates = [...new Set(records.map(r => r.date))].sort((a, b) => b.localeCompare(a));
-  if (!dates.length) return 0;
-  const t = today(), yest = prevDay(t);
-  if (dates[0] !== t && dates[0] !== yest) return 0;
-  let streak = 0, expected = dates[0];
-  for (const date of dates) {
-    if (date === expected) { streak++; expected = prevDay(expected); }
-    else break;
+  if (!records.length) return 0;
+  const dates = new Set(records.map(r => r.date));
+  const t = today();
+  const { dow } = parseDate(t);
+  const daysToMonday = dow === 0 ? 6 : dow - 1;
+  const [ty, tm, td] = t.split('-').map(Number);
+  let streak = 0;
+  for (let w = 0; w < 520; w++) {
+    const monDt = new Date(Date.UTC(ty, tm - 1, td - daysToMonday - w * 7, 12));
+    const monStr = monDt.toISOString().slice(0, 10);
+    const sunStr = new Date(Date.UTC(monDt.getUTCFullYear(), monDt.getUTCMonth(), monDt.getUTCDate() + 6, 12)).toISOString().slice(0, 10);
+    const hasWorkout = [...dates].some(d => d >= monStr && d <= sunStr);
+    if (!hasWorkout) { if (w === 0) continue; break; }
+    streak++;
   }
   return streak;
 }
 
 function streakMsg(n, type) {
   const label = type === 'w' ? 'ウエイト' : '有酸素';
-  if (n === 0)  return `今日 ${label} を記録して始めよう！`;
-  if (n < 3)    return 'スタート！継続が力だ 💪';
-  if (n < 7)    return `${n}日連続！いい調子、このまま続けよう！`;
-  if (n < 14)   return `${n}日連続！習慣になってきた 🔥`;
-  if (n < 21)   return `${n}日連続！本物の習慣が身についてる 🔥🔥`;
-  if (n < 30)   return `${n}日連続！もうお前の一部だ 💪🔥`;
-  return `${n}日連続！！伝説のアスリート 🏆`;
+  if (n === 0)  return `今週 ${label} を記録して始めよう！`;
+  if (n < 3)    return '継続中！このペースで続けよう 💪';
+  if (n < 8)    return `${n}週連続！習慣になってきた 🔥`;
+  if (n < 16)   return `${n}週連続！本物の習慣 🔥🔥`;
+  return `${n}週連続！圧倒的継続力 🏆`;
 }
 
 
