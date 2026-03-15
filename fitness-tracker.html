@@ -1269,13 +1269,6 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div id="home-goals"></div>
   </div>
 
-  <!-- PR Top 3 -->
-  <div class="card" id="home-pr-card">
-    <div class="card-label">🏆 Personal Records</div>
-    <div class="glow-line"></div>
-    <div id="home-pr"></div>
-  </div>
-
   <!-- Strength Score -->
   <div class="card" id="home-ss-card" style="display:none;">
     <div class="card-label">⚡ Strength Score</div>
@@ -3519,40 +3512,9 @@ function renderHome() {
   // 目標
   renderGoals();
 
-  // PR（直近7日更新分のみ）
-  renderPRList();
-
   // Strength Score & Heatmap
   renderStrengthScore();
   renderYearHeatmap();
-}
-
-function renderPRList() {
-  const allPRs = getTopPRs(999);
-  const prEl   = document.getElementById('home-pr');
-  const cut7   = daysAgo(7);
-
-  // 直近7日以内にベスト記録が更新された種目のみ表示
-  const recentPRs = allPRs.filter(p => p.date >= cut7);
-
-  if (!recentPRs.length) {
-    prEl.innerHTML = `<div class="recent-pr-empty">直近7日間のPR更新なし<br><span style="opacity:.6;">記録を続けてPRを更新しよう！</span></div>`;
-    return;
-  }
-
-  prEl.innerHTML = recentPRs.map(p => {
-    const rm = calc1RM(p.weight, p.reps);
-    return `
-      <div class="pr-row">
-        <span class="pr-rank">🏆</span>
-        <span class="pr-exercise">${esc(p.exercise)}</span>
-        <span>
-          <span class="pr-val">${p.weight}kg × ${p.reps}rep</span>
-          ${rm > p.weight ? `<span style="font-size:10px;color:var(--sub);font-weight:700;margin-left:4px;">推定1RM ${rm}kg</span>` : ''}
-          <div class="pr-date">${fmtDateFull(p.date)}</div>
-        </span>
-      </div>`;
-  }).join('');
 }
 
 /* ─────────────────────────────────────────
