@@ -1117,6 +1117,34 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .today-done-detail { font-size:11px; color:var(--sub); margin-top:2px; line-height:1.5; }
 .today-done-vol    { font-size:11px; color:var(--accent); font-weight:800; }
 
+/* ═══════════ DATE ACCORDION ═══════════ */
+.date-group { margin-bottom:8px; }
+.date-group-hd {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; cursor:pointer;
+  background:var(--card); border-radius:14px;
+  user-select:none; -webkit-user-select:none;
+  transition:border-radius .15s;
+}
+.date-group.open .date-group-hd { border-radius:14px 14px 0 0; }
+.dg-date { font-size:11px; font-weight:800; color:var(--sub); white-space:nowrap; flex-shrink:0; }
+.dg-pills { flex:1; display:flex; flex-wrap:wrap; gap:4px; min-width:0; }
+.dg-pill { font-size:10px; font-weight:800; color:var(--text); background:rgba(255,255,255,.07); border-radius:6px; padding:3px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; }
+.dg-pill.w { border-left:2px solid var(--accent); }
+.dg-pill.c { border-left:2px solid var(--green); }
+.dg-pill.b { border-left:2px solid var(--amber); }
+.dg-chevron { font-size:16px; font-weight:900; color:var(--sub); transition:transform .2s; flex-shrink:0; line-height:1; }
+.date-group.open .dg-chevron { transform:rotate(90deg); }
+.date-group-bd {
+  display:none; background:var(--card);
+  border-radius:0 0 14px 14px;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding:4px 14px 10px;
+}
+.date-group.open .date-group-bd { display:block; }
+.dg-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.dg-item:last-child { border-bottom:none; }
+
 /* ═══════════ SET PREV HINT ═══════════ */
 .set-prev-hint { width:100%; padding-left:40px; font-size:9px; color:rgba(255,255,255,.22); font-weight:700; line-height:1; letter-spacing:.04em; min-height:10px; margin-bottom:4px; }
 
@@ -1948,68 +1976,85 @@ function saveWeight() {
 }
 
 function renderWRecent() {
-  const all  = sortDesc(load(K.w));
-  const recs = all.slice(0, showLimit.w);
-  const el   = document.getElementById('w-recent');
+  const all = sortDesc(load(K.w));
+  const el  = document.getElementById('w-recent');
   if (!all.length) { el.innerHTML = emptyHTML('🏋️','NO RECORDS YET'); return; }
 
-  // PR計算: 種目ごとの最高重量（自重種目は最多回数）
+  // PR計算
   const prMap = {};
   all.forEach(r => {
     if (!prMap[r.exercise]) prMap[r.exercise] = { weight: 0, reps: 0 };
     const sets = r.setData || [{ weight: r.weight || 0, reps: r.reps || 0 }];
     sets.forEach(s => {
-      if ((s.weight || 0) > prMap[r.exercise].weight) prMap[r.exercise].weight = s.weight || 0;
-      if ((s.reps   || 0) > prMap[r.exercise].reps)   prMap[r.exercise].reps   = s.reps   || 0;
+      if ((s.weight||0) > prMap[r.exercise].weight) prMap[r.exercise].weight = s.weight||0;
+      if ((s.reps  ||0) > prMap[r.exercise].reps)   prMap[r.exercise].reps   = s.reps  ||0;
     });
   });
 
-  el.innerHTML = recs.map(r => {
-    const sd = r.setData;
-    let numsHTML, vol;
-    if (sd && sd.length) {
-      const maxW = Math.max(...sd.map(s => s.weight || 0));
-      const maxR = Math.max(...sd.map(s => s.reps   || 0));
-      vol = sd.reduce((a, s) => a + (s.weight || 0) * (s.reps || 0), 0);
-      const pr  = prMap[r.exercise];
-      const isPR = maxW > 0 ? maxW >= pr.weight : pr.weight === 0 && maxR >= pr.reps;
-      numsHTML = `
-        <div style="font-size:12px;color:var(--sub);margin-top:4px;line-height:1.7;">
-          ${sd.map((s,i) => `<span style="margin-right:8px;">${i+1}. ${s.weight > 0 ? s.weight+'kg' : '自重'} × ${s.reps}回${s.assisted > 0 ? `<span style="color:#5e9eff;font-size:10px;"> +${s.assisted}補</span>` : ''}</span>`).join('')}
-        </div>
-        ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}`;
-    } else {
-      const wt  = r.weight > 0;
-      vol = wt ? r.weight * r.reps * r.sets : null;
-      const pr  = prMap[r.exercise];
-      const isPR = wt ? r.weight >= pr.weight : pr.weight === 0 && (r.reps || 0) >= pr.reps;
-      numsHTML = `
-        <div class="rec-card-nums">
-          ${wt ? `<span class="rec-num">${r.weight}</span><span class="rec-unit">kg</span><span class="rec-sep">×</span>` : '<span class="rec-unit">自重</span><span class="rec-sep">×</span>'}
-          <span class="rec-num" style="font-size:20px;">${r.reps}</span><span class="rec-unit">回</span>
-          <span class="rec-sep">×</span><span class="rec-num" style="font-size:20px;">${r.sets}</span><span class="rec-unit">set</span>
-          ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}
-        </div>`;
-    }
-    return `
-      <div class="rec-card">
-        <div class="rec-card-body">
-          <div class="rec-card-name">${esc(r.exercise)}</div>
-          ${numsHTML}
-          ${vol ? `<div><span class="vol-badge">VOL ${vol.toLocaleString()}kg</span></div>` : ''}
-          ${r.memo ? `<div class="rec-memo">📝 ${esc(r.memo)}</div>` : ''}
-        </div>
-        <div class="rec-card-right">
-          <div class="rec-date">${fmtDateFull(r.date)}</div>
-          <div class="rec-actions">
-            <button class="btn-hist" onclick="showExHistorySheet('${esc(r.exercise).replace(/'/g,"\\'")}')">📊</button>
-            <button class="btn-edit" onclick="editRecord('w','${r.id}')">編集</button>
-            <button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',renderWRecent)">DEL</button>
+  // 日付でグループ化
+  const dateMap = {}, dates = [];
+  all.forEach(r => {
+    if (!dateMap[r.date]) { dateMap[r.date] = []; dates.push(r.date); }
+    dateMap[r.date].push(r);
+  });
+
+  const sliced = dates.slice(0, showLimit.w);
+  el.innerHTML = sliced.map((date, di) => {
+    const recs = dateMap[date];
+    const pills = recs.map(r => `<span class="dg-pill w">${esc(r.exercise)}</span>`).join('');
+    const body = recs.map(r => {
+      const sd = r.setData;
+      let numsHTML;
+      if (sd && sd.length) {
+        const maxW = Math.max(...sd.map(s => s.weight||0));
+        const maxR = Math.max(...sd.map(s => s.reps  ||0));
+        const pr = prMap[r.exercise];
+        const isPR = maxW > 0 ? maxW >= pr.weight : pr.weight === 0 && maxR >= pr.reps;
+        numsHTML = `
+          <div style="font-size:12px;color:var(--sub);margin-top:4px;line-height:1.7;">
+            ${sd.map((s,i) => `<span style="margin-right:8px;">${i+1}. ${s.weight>0?s.weight+'kg':'自重'} × ${s.reps}回${s.assisted>0?`<span style="color:#5e9eff;font-size:10px;"> +${s.assisted}補</span>`:''}</span>`).join('')}
           </div>
+          ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}`;
+      } else {
+        const wt = r.weight > 0;
+        const pr = prMap[r.exercise];
+        const isPR = wt ? r.weight >= pr.weight : pr.weight === 0 && (r.reps||0) >= pr.reps;
+        numsHTML = `
+          <div class="rec-card-nums">
+            ${wt ? `<span class="rec-num">${r.weight}</span><span class="rec-unit">kg</span><span class="rec-sep">×</span>` : '<span class="rec-unit">自重</span><span class="rec-sep">×</span>'}
+            <span class="rec-num" style="font-size:20px;">${r.reps}</span><span class="rec-unit">回</span>
+            <span class="rec-sep">×</span><span class="rec-num" style="font-size:20px;">${r.sets}</span><span class="rec-unit">set</span>
+            ${isPR ? '<span class="pr-badge">🏆 PR</span>' : ''}
+          </div>`;
+      }
+      return `
+        <div class="dg-item">
+          <div class="rec-icon ic-w">💪</div>
+          <div class="rec-body" style="flex:1;">
+            <div class="rec-title">${esc(r.exercise)}</div>
+            ${numsHTML}
+            ${r.memo ? `<div class="rec-detail">📝 ${esc(r.memo)}</div>` : ''}
+          </div>
+          <div class="rec-right">
+            <div class="rec-actions">
+              <button class="btn-hist" onclick="showExHistorySheet('${esc(r.exercise).replace(/'/g,"\\'")}')">📊</button>
+              <button class="btn-edit" onclick="editRecord('w','${r.id}')">編集</button>
+              <button class="btn btn-ghost" onclick="delRec('${K.w}','${r.id}',renderWRecent)">DEL</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="date-group${di===0?' open':''}">
+        <div class="date-group-hd" onclick="this.parentElement.classList.toggle('open')">
+          <div class="dg-date">${fmtDateFull(date)}</div>
+          <div class="dg-pills">${pills}</div>
+          <div class="dg-chevron">›</div>
         </div>
+        <div class="date-group-bd">${body}</div>
       </div>`;
-  }).join('') + (all.length > showLimit.w
-    ? `<button class="btn-load-more" onclick="loadMore('w')">▼ さらに表示 (${all.length - showLimit.w}件)</button>`
+  }).join('') + (dates.length > showLimit.w
+    ? `<button class="btn-load-more" onclick="loadMore('w')">▼ さらに表示 (${dates.length - showLimit.w}日分)</button>`
     : '');
 }
 
@@ -2041,32 +2086,49 @@ function saveCardio() {
 }
 
 function renderCRecent() {
-  const all  = sortDesc(load(K.c));
-  const recs = all.slice(0, showLimit.c);
-  const el   = document.getElementById('c-recent');
+  const all = sortDesc(load(K.c));
+  const el  = document.getElementById('c-recent');
   if (!all.length) { el.innerHTML = emptyHTML('🏃','NO RECORDS YET'); return; }
 
-  el.innerHTML = recs.map(r => `
-    <div class="rec-card">
-      <div class="rec-card-body">
-        <div class="rec-card-name">${esc(r.type)}</div>
-        <div class="rec-card-nums">
-          <span class="rec-num rec-num-g">${r.duration}</span><span class="rec-unit">分</span>
-          ${r.distance > 0
-            ? `<span class="rec-sep">·</span><span class="rec-num rec-num-g">${r.distance}</span><span class="rec-unit">km</span>`
-            : ''}
+  const dateMap = {}, dates = [];
+  all.forEach(r => {
+    if (!dateMap[r.date]) { dateMap[r.date] = []; dates.push(r.date); }
+    dateMap[r.date].push(r);
+  });
+
+  const sliced = dates.slice(0, showLimit.c);
+  el.innerHTML = sliced.map((date, di) => {
+    const recs = dateMap[date];
+    const pills = recs.map(r => `<span class="dg-pill c">${esc(r.type)}</span>`).join('');
+    const body = recs.map(r => `
+      <div class="dg-item">
+        <div class="rec-icon ic-c">🏃</div>
+        <div class="rec-body" style="flex:1;">
+          <div class="rec-title">${esc(r.type)}</div>
+          <div class="rec-card-nums">
+            <span class="rec-num rec-num-g">${r.duration}</span><span class="rec-unit">分</span>
+            ${r.distance > 0 ? `<span class="rec-sep">·</span><span class="rec-num rec-num-g">${r.distance}</span><span class="rec-unit">km</span>` : ''}
+          </div>
+          ${r.memo ? `<div class="rec-detail">📝 ${esc(r.memo)}</div>` : ''}
         </div>
-      </div>
-      <div class="rec-card-right">
-        <div class="rec-date">${fmtDateFull(r.date)}</div>
-        <div class="rec-actions">
-          <button class="btn-edit" onclick="editRecord('c','${r.id}')">編集</button>
-          <button class="btn btn-ghost" onclick="delRec('${K.c}','${r.id}',renderCRecent)">DEL</button>
+        <div class="rec-right">
+          <div class="rec-actions">
+            <button class="btn-edit" onclick="editRecord('c','${r.id}')">編集</button>
+            <button class="btn btn-ghost" onclick="delRec('${K.c}','${r.id}',renderCRecent)">DEL</button>
+          </div>
         </div>
-      </div>
-    </div>
-  `).join('') + (all.length > showLimit.c
-    ? `<button class="btn-load-more" onclick="loadMore('c')">▼ さらに表示 (${all.length - showLimit.c}件)</button>`
+      </div>`).join('');
+    return `
+      <div class="date-group${di===0?' open':''}">
+        <div class="date-group-hd" onclick="this.parentElement.classList.toggle('open')">
+          <div class="dg-date">${fmtDateFull(date)}</div>
+          <div class="dg-pills">${pills}</div>
+          <div class="dg-chevron">›</div>
+        </div>
+        <div class="date-group-bd">${body}</div>
+      </div>`;
+  }).join('') + (dates.length > showLimit.c
+    ? `<button class="btn-load-more" onclick="loadMore('c')">▼ さらに表示 (${dates.length - showLimit.c}日分)</button>`
     : '');
 }
 
@@ -2182,14 +2244,24 @@ function renderHistory() {
   // 日付グループの順序はソート済みallの出現順を維持
   const dates = [...new Set(all.map(r => r.date))];
 
-  el.innerHTML = dates.map(date => `
-    <div style="margin-bottom:14px;">
-      <div class="hist-sep">📅 ${fmtDateFull(date)}${tagBadgesHTML(getTagsForDate(date))}</div>
-      <div class="card" style="padding:8px 14px;">
-        ${grouped[date].map(r => histItem(r)).join('')}
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = dates.map((date, di) => {
+    const recs = grouped[date];
+    const pills = recs.map(r => {
+      const cls = r._t==='weight' ? 'w' : r._t==='cardio' ? 'c' : 'b';
+      const name = r._t==='weight' ? r.exercise : r._t==='cardio' ? r.type : '体重';
+      return `<span class="dg-pill ${cls}">${esc(name)}</span>`;
+    }).join('');
+    const tags = tagBadgesHTML(getTagsForDate(date));
+    return `
+      <div class="date-group${di===0?' open':''}">
+        <div class="date-group-hd" onclick="this.parentElement.classList.toggle('open')">
+          <div class="dg-date">${fmtDateFull(date)}${tags ? ' '+tags : ''}</div>
+          <div class="dg-pills">${pills}</div>
+          <div class="dg-chevron">›</div>
+        </div>
+        <div class="date-group-bd">${recs.map(r => histItem(r)).join('')}</div>
+      </div>`;
+  }).join('');
 }
 
 function histItem(r) {
