@@ -1144,6 +1144,21 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 /* ═══════════ SET PREV HINT ═══════════ */
 .set-prev-hint { width:100%; padding-left:40px; font-size:9px; color:rgba(255,255,255,.22); font-weight:700; line-height:1; letter-spacing:.04em; min-height:10px; margin-bottom:4px; }
+
+/* ═══════════ HABIT SCORE ═══════════ */
+.hs-wrap { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+.hs-score-circle { width:72px; height:72px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; border:3px solid var(--accent); background:rgba(255,85,0,.08); }
+.hs-score-num { font-size:26px; font-weight:900; color:var(--accent); line-height:1; font-variant-numeric:tabular-nums; }
+.hs-score-max { font-size:9px; color:var(--sub); font-weight:700; margin-top:1px; }
+.hs-meta { flex:1; min-width:0; }
+.hs-level-badge { display:inline-block; font-size:12px; font-weight:900; letter-spacing:.04em; padding:3px 10px; border-radius:20px; background:rgba(255,85,0,.15); border:1px solid rgba(255,85,0,.35); color:var(--accent); margin-bottom:6px; }
+.hs-tagline { font-size:11px; color:var(--sub); font-weight:700; line-height:1.4; }
+.hs-bars { display:flex; flex-direction:column; gap:8px; }
+.hs-bar-row { display:flex; align-items:center; gap:8px; }
+.hs-bar-label { font-size:10px; color:var(--sub); font-weight:800; width:80px; flex-shrink:0; letter-spacing:.02em; }
+.hs-bar-bg { flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,.07); overflow:hidden; }
+.hs-bar-fill { height:100%; border-radius:4px; background:var(--accent); transition:width .6s cubic-bezier(.4,0,.2,1); }
+.hs-bar-pts { font-size:10px; font-weight:900; color:var(--text); width:36px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -1214,6 +1229,13 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="card-label">🎯 Today's Mission</div>
     <div class="glow-line"></div>
     <div id="home-today-rec"></div>
+  </div>
+
+  <!-- Habit Score -->
+  <div class="card" id="home-hs-card">
+    <div class="card-label">🧬 Habit Score</div>
+    <div class="glow-line"></div>
+    <div id="home-hs-content"></div>
   </div>
 
   <!-- Hero: greeting + 体重 + insight + streaks -->
@@ -3491,6 +3513,9 @@ function renderHome() {
   renderRestartBanner();
   renderTodayMission();
 
+  // 習慣スコア
+  renderHabitScore();
+
   // 目標
   renderGoals();
 
@@ -4015,6 +4040,106 @@ function _renderVolumeBreakdown(recs) {
         <div class="goal-bar-fill orange" style="width:${Math.round(vol/maxV*100)}%;"></div>
       </div>
     </div>`).join('');
+}
+
+/* ─────────────────────────────────────────
+   HABIT SCORE
+───────────────────────────────────────── */
+function calcHabitScore() {
+  const weights = load(K.w);
+  const cardio  = load(K.c);
+  const allDates = new Set([...weights.map(r => r.date), ...cardio.map(r => r.date)]);
+  const td = today();
+  const msDay = 86400000;
+
+  function dAgo(n) {
+    const parts = td.split('-').map(Number);
+    const d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2], 12));
+    d.setUTCDate(d.getUTCDate() - n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  // Consistency (50pts): trained days in last 28 / (3×4 target)
+  const cut28 = dAgo(27);
+  const trainedLast28 = [...allDates].filter(d => d >= cut28 && d <= td).length;
+  const consistencyPts = Math.round(Math.min(50, (trainedLast28 / 12) * 50));
+
+  // Streak (20pts): weekly streak × 5, capped at 20
+  const streakWeeks = calcStreak([...weights, ...cardio]);
+  const streakPts = Math.min(20, streakWeeks * 5);
+
+  // Recovery (15pts): max gap between training days in last 30 days
+  const cut30 = dAgo(29);
+  const recentDates = [...allDates].filter(d => d >= cut30 && d <= td).sort();
+  let maxGap = 0;
+  if (recentDates.length >= 2) {
+    for (let i = 1; i < recentDates.length; i++) {
+      const gap = (new Date(recentDates[i]+'T12:00:00Z') - new Date(recentDates[i-1]+'T12:00:00Z')) / msDay;
+      if (gap > maxGap) maxGap = gap;
+    }
+  } else if (recentDates.length === 1) {
+    maxGap = (new Date(td+'T12:00:00Z') - new Date(recentDates[0]+'T12:00:00Z')) / msDay;
+  } else {
+    maxGap = 30;
+  }
+  const recoveryPts = maxGap <= 3 ? 15 : maxGap <= 7 ? 10 : maxGap <= 14 ? 5 : 0;
+
+  // Trend (15pts): last 2 weeks vs prev 2 weeks
+  const cut14 = dAgo(13);
+  const last2w = [...allDates].filter(d => d >= cut14 && d <= td).length;
+  const prev2w = [...allDates].filter(d => d >= cut28 && d < cut14).length;
+  const trendPts = last2w > prev2w ? 15 : last2w === prev2w ? 8 : 0;
+
+  return { total: consistencyPts + streakPts + recoveryPts + trendPts, consistencyPts, streakPts, recoveryPts, trendPts, trainedLast28 };
+}
+
+function renderHabitScore() {
+  const el = document.getElementById('home-hs-content');
+  if (!el) return;
+  const { total, consistencyPts, streakPts, recoveryPts, trendPts } = calcHabitScore();
+  const levels = [
+    [95, '👑 Identity',    'あなたは今、筋トレそのものだ'],
+    [85, '💪 Hardcore',   '習慣の鎧が完成しつつある'],
+    [70, '⚡ Consistent', '強い習慣の土台ができている'],
+    [50, '🏗 Building',   '習慣の形が見えてきた'],
+    [30, '🔥 Igniting',   '炎が燃え始めた'],
+    [0,  '🌱 Seedling',   '習慣の種を蒔いているところ'],
+  ];
+  const [, levelName, tagline] = levels.find(([min]) => total >= min);
+  const bc = (pts, max) => pts >= max ? 'var(--green)' : 'var(--accent)';
+  el.innerHTML = `
+    <div class="hs-wrap">
+      <div class="hs-score-circle">
+        <div class="hs-score-num">${total}</div>
+        <div class="hs-score-max">/100</div>
+      </div>
+      <div class="hs-meta">
+        <div class="hs-level-badge">${levelName}</div>
+        <div class="hs-tagline">${tagline}</div>
+      </div>
+    </div>
+    <div class="hs-bars">
+      <div class="hs-bar-row">
+        <div class="hs-bar-label">継続性</div>
+        <div class="hs-bar-bg"><div class="hs-bar-fill" style="width:${consistencyPts/50*100}%;background:${bc(consistencyPts,50)};"></div></div>
+        <div class="hs-bar-pts">${consistencyPts}<span style="color:var(--sub);font-size:8px;font-weight:700;">/50</span></div>
+      </div>
+      <div class="hs-bar-row">
+        <div class="hs-bar-label">ストリーク</div>
+        <div class="hs-bar-bg"><div class="hs-bar-fill" style="width:${streakPts/20*100}%;background:${bc(streakPts,20)};"></div></div>
+        <div class="hs-bar-pts">${streakPts}<span style="color:var(--sub);font-size:8px;font-weight:700;">/20</span></div>
+      </div>
+      <div class="hs-bar-row">
+        <div class="hs-bar-label">回復リズム</div>
+        <div class="hs-bar-bg"><div class="hs-bar-fill" style="width:${recoveryPts/15*100}%;background:${bc(recoveryPts,15)};"></div></div>
+        <div class="hs-bar-pts">${recoveryPts}<span style="color:var(--sub);font-size:8px;font-weight:700;">/15</span></div>
+      </div>
+      <div class="hs-bar-row">
+        <div class="hs-bar-label">トレンド</div>
+        <div class="hs-bar-bg"><div class="hs-bar-fill" style="width:${trendPts/15*100}%;background:${bc(trendPts,15)};"></div></div>
+        <div class="hs-bar-pts">${trendPts}<span style="color:var(--sub);font-size:8px;font-weight:700;">/15</span></div>
+      </div>
+    </div>`;
 }
 
 /* ─────────────────────────────────────────
