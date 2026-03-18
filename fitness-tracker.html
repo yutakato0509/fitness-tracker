@@ -1030,6 +1030,38 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 .restart-title { font-size:15px; font-weight:800; color:#fff; }
 .restart-sub   { font-size:11px; color:var(--amber); font-weight:700; margin-top:2px; }
 
+/* ═══════════ PWA INSTALL BANNER ═══════════ */
+.pwa-banner {
+  display: none;
+  align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(0,212,106,.13), rgba(0,179,89,.08));
+  border: 1px solid rgba(0,212,106,.25); border-radius: 16px;
+  padding: 14px 16px; margin: 0 14px 10px;
+}
+.pwa-banner.show { display: flex; }
+.pwa-banner-icon { font-size: 28px; flex-shrink: 0; line-height: 1; }
+.pwa-banner-body { flex: 1; min-width: 0; }
+.pwa-banner-title { font-size: 13px; font-weight: 800; color: #fff; }
+.pwa-banner-sub   { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 2px; }
+.pwa-banner-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,.07); border: none;
+  color: var(--sub); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-family: inherit; -webkit-appearance: none;
+  transition: background .15s;
+}
+.pwa-banner-close:active { background: rgba(255,255,255,.15); }
+.pwa-banner-add {
+  padding: 8px 14px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--green), #00b359);
+  border: none; color: #000; font-size: 11px; font-weight: 900;
+  cursor: pointer; font-family: inherit; -webkit-appearance: none;
+  white-space: nowrap; flex-shrink: 0; letter-spacing: .04em;
+  transition: transform .12s;
+}
+.pwa-banner-add:active { transform: scale(.94); }
+
 /* ═══════════ TODAY RECOMMENDATION ═══════════ */
 .today-rec-label { font-size:10px; font-weight:800; color:var(--sub); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
 .today-rec-row   { display:flex; gap:8px; flex-wrap:wrap; }
@@ -1181,6 +1213,17 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 
 <div class="toast" id="toast"></div>
 
+<!-- PWAインストール促進バナー -->
+<div class="pwa-banner" id="pwa-banner">
+  <span class="pwa-banner-icon">📲</span>
+  <div class="pwa-banner-body">
+    <div class="pwa-banner-title">ホーム画面に追加しよう</div>
+    <div class="pwa-banner-sub">オフラインでも使える・アプリ感覚で起動</div>
+  </div>
+  <button class="pwa-banner-add" id="pwa-banner-add" onclick="triggerPwaInstall()">追加</button>
+  <button class="pwa-banner-close" onclick="closePwaBanner()" aria-label="閉じる">✕</button>
+</div>
+
 <!-- シェアシート -->
 <div class="share-sheet-overlay" id="share-sheet-overlay" onclick="closeShareSheet(event)">
   <div class="share-sheet">
@@ -1269,6 +1312,10 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="app-util-btn" onclick="openShareSheet()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
       シェア
+    </button>
+    <button class="app-util-btn" onclick="shareInvite()" style="color:var(--green);border-color:rgba(0,212,106,.25);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      友達に紹介
     </button>
     <span class="sync-icon app-util-btn" id="sync-icon" title="同期状態" onclick="openUserMenu()" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -1760,6 +1807,7 @@ window.addEventListener('DOMContentLoaded', () => {
   openPhotoDB();
   initFirebase();
   checkOnboarding();
+  checkPwaBanner();
 });
 
 /* ─────────────────────────────────────────
@@ -2845,7 +2893,7 @@ function tagBadgesHTML(tags) {
    SHARE
 ───────────────────────────────────────── */
 const SHARE_URL  = 'https://liftnote-app.netlify.app/';
-const SHARE_TEXT = '🔥 LiftNote — テクノロジー×筋肉で習慣をハックする筋トレ記録アプリ。無料・インストール不要！';
+const SHARE_TEXT = '🔥 LiftNote — テクノロジー×筋肉で習慣をハック。無料・インストール不要の筋トレ記録アプリ！\n#LiftNote #筋トレ #個人開発';
 
 function openShareSheet() {
   document.getElementById('share-sheet-overlay').classList.add('open');
@@ -2872,6 +2920,76 @@ function shareAction(type) {
   }
   if (type === 'twitter' || type === 'line') {
     document.getElementById('share-sheet-overlay').classList.remove('open');
+  }
+}
+
+/* 友達に紹介（Web Share API） */
+function shareInvite() {
+  const text = '筋トレ記録アプリ LiftNote を使ってみて！';
+  const url  = 'https://liftnote-app.netlify.app';
+  if (navigator.share) {
+    navigator.share({ title: 'LiftNote', text, url }).catch(() => {});
+  } else {
+    // フォールバック: クリップボードコピー
+    navigator.clipboard.writeText(text + '\n' + url)
+      .then(() => toast('📋 紹介テキストをコピーしました！'))
+      .catch(() => toast('コピーできませんでした'));
+  }
+}
+
+/* ─────────────────────────────────────────
+   PWA INSTALL BANNER
+───────────────────────────────────────── */
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  // インストール済み or バナー閉済みでなければ追加ボタンを有効化
+  const banner = document.getElementById('pwa-banner');
+  if (banner && banner.classList.contains('show')) {
+    document.getElementById('pwa-banner-add').style.display = '';
+  }
+});
+
+function checkPwaBanner() {
+  // インストール済みなら非表示
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (localStorage.getItem('ln_pwa_dismissed')) return;
+
+  const visits = parseInt(localStorage.getItem('ln_visit_count') || '0') + 1;
+  localStorage.setItem('ln_visit_count', visits);
+
+  if (visits >= 3) {
+    const banner = document.getElementById('pwa-banner');
+    if (!banner) return;
+    banner.classList.add('show');
+    // Web Share API非対応 & beforeinstallpromptも未発火の場合はiOS向けメッセージに変更
+    if (!_deferredInstallPrompt) {
+      const addBtn = document.getElementById('pwa-banner-add');
+      if (addBtn) addBtn.style.display = 'none';
+      const sub = banner.querySelector('.pwa-banner-sub');
+      if (sub) sub.textContent = 'Safari → 共有 → ホーム画面に追加';
+    }
+  }
+}
+
+function closePwaBanner() {
+  localStorage.setItem('ln_pwa_dismissed', '1');
+  document.getElementById('pwa-banner').classList.remove('show');
+}
+
+function triggerPwaInstall() {
+  if (_deferredInstallPrompt) {
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') {
+        localStorage.setItem('ln_pwa_dismissed', '1');
+        document.getElementById('pwa-banner').classList.remove('show');
+        toast('🎉 ホーム画面に追加しました！');
+      }
+      _deferredInstallPrompt = null;
+    });
   }
 }
 
