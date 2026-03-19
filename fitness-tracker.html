@@ -8,10 +8,10 @@
 
 <!-- OGP -->
 <meta property="og:type"        content="website">
-<meta property="og:url"         content="https://liftnote-app.netlify.app/">
+<meta property="og:url"         content="https://yutakato0509.github.io/liftnote/">
 <meta property="og:title"       content="LiftNote — テクノロジー×筋肉で習慣をハック">
 <meta property="og:description" content="無料・インストール不要のPWA筋トレ記録アプリ LiftNote。ウエイト・有酸素・体重をスマートに管理。">
-<meta property="og:image"       content="https://liftnote-app.netlify.app/og-image.svg">
+<meta property="og:image"       content="https://yutakato0509.github.io/liftnote/og-image.svg">
 <meta property="og:locale"      content="ja_JP">
 <meta property="og:site_name"   content="LiftNote">
 
@@ -19,7 +19,7 @@
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:title"       content="LiftNote — テクノロジー×筋肉で習慣をハック">
 <meta name="twitter:description" content="無料・インストール不要のPWA筋トレ記録アプリ LiftNote。ウエイト・有酸素・体重をスマートに管理。">
-<meta name="twitter:image"       content="https://liftnote-app.netlify.app/og-image.svg">
+<meta name="twitter:image"       content="https://yutakato0509.github.io/liftnote/og-image.svg">
 
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -32,11 +32,11 @@
     navigator.serviceWorker.register('/service-worker.js').catch(() => {});
   }
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" onerror="console.warn('Firebase app SDK failed to load')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js" onerror="console.warn('Firebase auth SDK failed to load')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js" onerror="console.warn('Firebase firestore SDK failed to load')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js" onerror="console.warn('Firebase storage SDK failed to load')"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="console.warn('Chart.js failed to load. Graphs unavailable.')"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -1526,7 +1526,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 <div class="share-sheet-overlay" id="share-sheet-overlay" onclick="closeShareSheet(event)">
   <div class="share-sheet">
     <div class="share-sheet-title">友達にシェア</div>
-    <div class="share-sheet-url">https://liftnote-app.netlify.app/</div>
+    <div class="share-sheet-url">https://yutakato0509.github.io/liftnote/</div>
     <div class="share-btns">
       <button class="share-btn-item" onclick="shareAction('copy')">
         <span class="share-icon">📋</span>
@@ -2107,7 +2107,18 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 const K = { w: 'ft_weights', c: 'ft_cardio', b: 'ft_body', favs: 'ft_favs', goals: 'ft_goals' };
 
 function load(k)    { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } }
-function save(k, d) { localStorage.setItem(k, JSON.stringify(d)); scheduleSync(); }
+function save(k, d) {
+  try {
+    localStorage.setItem(k, JSON.stringify(d));
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014) {
+      toast('⚠️ ストレージ容量が上限です。バックアップ→削除で空き容量を確保してください。');
+    } else {
+      console.error('Save error:', e);
+    }
+  }
+  scheduleSync();
+}
 
 /* ─────────────────────────────────────────
    UTILS
@@ -2824,6 +2835,7 @@ function chartOpts(unit) {
 }
 
 function drawBwChart() {
+  if (typeof Chart === 'undefined') return;
   if (bwChart) { bwChart.destroy(); bwChart = null; }
   const all    = load(K.b).sort((a,b) => a.date.localeCompare(b.date));
   const recs   = filterByPeriod(all, graphPeriod.bw);
@@ -2940,6 +2952,7 @@ function fillExSel() {
 }
 
 function drawExChart() {
+  if (typeof Chart === 'undefined') return;
   if (exChart) { exChart.destroy(); exChart = null; }
   const exercise = document.getElementById('ex-sel').value;
   const card     = document.getElementById('ex-chart-card');
@@ -3317,7 +3330,7 @@ function tagBadgesHTML(tags) {
 /* ─────────────────────────────────────────
    SHARE
 ───────────────────────────────────────── */
-const SHARE_URL  = 'https://liftnote-app.netlify.app/';
+const SHARE_URL  = 'https://yutakato0509.github.io/liftnote/';
 const SHARE_TEXT = '🔥 LiftNote — テクノロジー×筋肉で習慣をハック。無料・インストール不要の筋トレ記録アプリ！\n#LiftNote #筋トレ #個人開発';
 
 function openShareSheet() {
@@ -3400,9 +3413,9 @@ function sharePrModal() {
   const { exercise, newRM, diffRM } = _prModalData;
   const text = `🏆 NEW PR！\n${exercise} 推定1RM ${newRM}kg${diffRM>0?` (+${diffRM}kg)`:''}🔥\n\nLiftNoteで記録中 #LiftNote #筋トレ #${exercise.replace(/\s/g,'')}`;
   if (navigator.share) {
-    navigator.share({ title:'LiftNote PR更新！', text, url:'https://liftnote-app.netlify.app' }).catch(()=>{});
+    navigator.share({ title:'LiftNote PR更新！', text, url:'https://yutakato0509.github.io/liftnote' }).catch(()=>{});
   } else {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://liftnote-app.netlify.app')}`, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://yutakato0509.github.io/liftnote')}`, '_blank');
   }
   closePrModal();
 }
@@ -3432,7 +3445,7 @@ function closeLoginPrompt() {
 /* 友達に紹介（Web Share API） */
 function shareInvite() {
   const text = '筋トレ記録アプリ LiftNote を使ってみて！';
-  const url  = 'https://liftnote-app.netlify.app';
+  const url  = 'https://yutakato0509.github.io/liftnote';
   if (navigator.share) {
     navigator.share({ title: 'LiftNote', text, url }).catch(() => {});
   } else {
@@ -3642,6 +3655,7 @@ function setPeriodCardio(p, el) {
   drawCardioChart();
 }
 function drawCardioChart() {
+  if (typeof Chart === 'undefined') return;
   if (cardioChart) { cardioChart.destroy(); cardioChart = null; }
   const all      = load(K.c).sort((a,b) => a.date.localeCompare(b.date));
   const filtered = filterByPeriod(all, graphPeriod.cardio);
@@ -4248,6 +4262,10 @@ let fbAuth = null, fbDb = null, fbStorage = null, syncTimer = null;
 
 function initFirebase() {
   if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // 未設定ならスキップ
+  if (typeof firebase === 'undefined') {
+    console.warn('Firebase SDK not loaded. Cloud sync unavailable.');
+    return;
+  }
   firebase.initializeApp(FIREBASE_CONFIG);
   fbAuth = firebase.auth();
   fbDb = firebase.firestore();
@@ -4338,7 +4356,11 @@ async function pushToFirestore() {
     setTimeout(() => setSyncState(''), 3000);
   } catch (e) {
     setSyncState('err');
-    console.error('Firestore push error:', e);
+    if (e.code === 'resource-exhausted') {
+      toast('⚠️ Firebase 無料枠の上限です。ローカルデータは保持されています。');
+    } else {
+      console.error('Firestore push error:', e);
+    }
   }
 }
 
@@ -4371,8 +4393,12 @@ async function pullFromFirestore(uid) {
     toast('☁️ データを同期しました');
     setTimeout(() => setSyncState(''), 3000);
   } catch (e) {
-    console.error('Firestore pull error:', e);
     setSyncState('err');
+    if (e.code === 'resource-exhausted') {
+      toast('⚠️ Firebase 無料枠の上限です。ローカルデータは保持されています。');
+    } else {
+      console.error('Firestore pull error:', e);
+    }
   }
 }
 
@@ -4783,6 +4809,7 @@ function showExHistorySheet(exercise) {
   document.getElementById('hist-sheet-sub').textContent   = `直近 ${records.length} セッション`;
 
   // ミニグラフ（最大重量 & 推定1RM）
+  if (typeof Chart === 'undefined') { toast('⚠️ グラフを読み込めませんでした'); return; }
   if (histSheetChart) { histSheetChart.destroy(); histSheetChart = null; }
   const chartData = [...records].reverse().map(r => {
     const maxW = r.setData ? Math.max(...r.setData.map(s=>s.weight||0)) : (r.weight||0);
@@ -4897,7 +4924,7 @@ function awardBadge(id, meta) {
 function shareBadge(id) {
   const def = BADGES[id];
   if (!def) return;
-  const text = encodeURIComponent(def.shareText + '\n\nhttps://liftnote-app.netlify.app');
+  const text = encodeURIComponent(def.shareText + '\n\nhttps://yutakato0509.github.io/liftnote');
   window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
 }
 
@@ -5178,7 +5205,11 @@ function importData(e) {
       toast('📥 データを復元しました！');
       renderHome(); renderWRecent(); renderCRecent(); renderBRecent();
     } catch (err) {
-      toast('⚠️ 読み込みに失敗しました: ' + err.message);
+      if (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014) {
+        toast('⚠️ ストレージ容量が不足しています。不要なデータを削除してから再試行してください。');
+      } else {
+        toast('⚠️ 読み込みに失敗しました: ' + err.message);
+      }
     }
     e.target.value = '';
   };
