@@ -2069,6 +2069,37 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   </div>
 </div>
 
+<!-- REST TIMER FAB -->
+<div class="rest-timer-fab" id="rest-timer-fab">
+  <div class="rest-timer-label">⏱ REST</div>
+  <div class="rest-timer-display" id="rest-timer-display">1:30</div>
+  <div class="rest-timer-presets">
+    <button class="rest-preset-btn" onclick="setRestPreset(60)">1m</button>
+    <button class="rest-preset-btn active" onclick="setRestPreset(90)">1:30</button>
+    <button class="rest-preset-btn" onclick="setRestPreset(120)">2m</button>
+    <button class="rest-preset-btn" onclick="setRestPreset(180)">3m</button>
+  </div>
+  <div class="rest-timer-controls">
+    <button class="rest-ctrl-btn rest-ctrl-start" id="rest-ctrl-start" onclick="toggleRestTimer()">▶ スタート</button>
+    <button class="rest-ctrl-btn rest-ctrl-reset" onclick="resetRestTimer()">↺</button>
+    <button class="rest-ctrl-btn rest-ctrl-close" onclick="closeRestTimer()">✕</button>
+  </div>
+</div>
+<!-- BACKUP MODAL -->
+<div class="backup-modal" id="backup-modal" onclick="closeBackupModal(event)">
+  <div class="backup-sheet">
+    <div class="backup-title">// データ管理</div>
+    <button class="backup-btn backup-btn-export" onclick="exportData()">
+      📤 JSONでエクスポート（バックアップ）
+    </button>
+    <button class="backup-btn backup-btn-import" onclick="document.getElementById('import-file').click()">
+      📥 JSONからインポート（復元）
+    </button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="backup-btn backup-btn-close" onclick="closeBackupModal()">✕ 閉じる</button>
+  </div>
+</div>
+
 <script>
 /* ─────────────────────────────────────────
    STORAGE
@@ -4436,13 +4467,6 @@ function renderMonthlySummary() {
   const wDays = new Set(wAll.map(r => r.date)).size;
   const cDays = new Set(cAll.map(r => r.date)).size;
 
-  // 今月の合計ボリューム
-  const totalVol = wAll.reduce((sum, r) => {
-    const sets = r.setData || [{ weight: r.weight||0, reps: r.reps||0 }];
-    return sum + sets.reduce((s2, s) => s2 + (s.weight||0)*(s.reps||0), 0);
-  }, 0);
-  const volStr = totalVol >= 1000 ? `${(totalVol/1000).toFixed(1)}t` : `${totalVol}kg`;
-
   // 今月の最高1RM
   let bestRM = 0, bestEx = '';
   wAll.forEach(r => {
@@ -4476,10 +4500,6 @@ function renderMonthlySummary() {
       <div class="monthly-item">
         <div class="monthly-num green">${cDays}</div>
         <div class="monthly-label">🏃 有酸素日数</div>
-      </div>
-      <div class="monthly-item" style="grid-column:1/-1;">
-        <div class="monthly-num" style="color:var(--accent);">${volStr}</div>
-        <div class="monthly-label">🏋️ 総ボリューム</div>
       </div>
       ${bestRM > 0 ? `<div class="monthly-item" style="grid-column:1/-1;">
         <div style="font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;">${esc(bestEx)}</div>
@@ -4608,33 +4628,12 @@ function renderTodayMission() {
   if (todayWRecs.length > 0) {
     const exNames = [...new Set(todayWRecs.map(r => r.exercise))];
     const streak = calcStreak(load(K.w));
-    // 今日の合計ボリューム計算
-    const todayVol = todayWRecs.reduce((sum, r) => {
-      const sets = r.setData || [{ weight: r.weight||0, reps: r.reps||0 }];
-      return sum + sets.reduce((s2, s) => s2 + (s.weight||0)*(s.reps||0), 0);
-    }, 0);
-    const volStr = todayVol >= 1000 ? `${(todayVol/1000).toFixed(1)}t` : `${todayVol}kg`;
-    const todaySets = todayWRecs.reduce((sum, r) => sum + (r.setData ? r.setData.length : 1), 0);
     el.innerHTML = `
       <div class="mission-done-row">
         <span class="mission-done-icon">✅</span>
         <div>
           <div class="mission-done-title">今日のミッション完了！</div>
           <div class="mission-done-exs">${exNames.slice(0,4).map(e => esc(e)).join('　·　')}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;margin:10px 0 4px;flex-wrap:wrap;">
-        <div style="background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.2);border-radius:10px;padding:7px 14px;">
-          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">総ボリューム</div>
-          <div style="font-size:22px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums;">${volStr}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 14px;">
-          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">種目数</div>
-          <div style="font-size:22px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;">${exNames.length}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 14px;">
-          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">総セット</div>
-          <div style="font-size:22px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;">${todaySets}</div>
         </div>
       </div>
       ${streak > 0 ? `<div class="mission-streak-chip">🔥 ${streak}週連続継続中</div>` : ''}
@@ -5024,37 +5023,6 @@ function renderTodayWorkout() {
       </div>`;
   }).join('');
 }
-
-<!-- REST TIMER FAB -->
-<div class="rest-timer-fab" id="rest-timer-fab">
-  <div class="rest-timer-label">⏱ REST</div>
-  <div class="rest-timer-display" id="rest-timer-display">1:30</div>
-  <div class="rest-timer-presets">
-    <button class="rest-preset-btn" onclick="setRestPreset(60)">1m</button>
-    <button class="rest-preset-btn active" onclick="setRestPreset(90)">1:30</button>
-    <button class="rest-preset-btn" onclick="setRestPreset(120)">2m</button>
-    <button class="rest-preset-btn" onclick="setRestPreset(180)">3m</button>
-  </div>
-  <div class="rest-timer-controls">
-    <button class="rest-ctrl-btn rest-ctrl-start" id="rest-ctrl-start" onclick="toggleRestTimer()">▶ スタート</button>
-    <button class="rest-ctrl-btn rest-ctrl-reset" onclick="resetRestTimer()">↺</button>
-    <button class="rest-ctrl-btn rest-ctrl-close" onclick="closeRestTimer()">✕</button>
-  </div>
-</div>
-<!-- BACKUP MODAL -->
-<div class="backup-modal" id="backup-modal" onclick="closeBackupModal(event)">
-  <div class="backup-sheet">
-    <div class="backup-title">// データ管理</div>
-    <button class="backup-btn backup-btn-export" onclick="exportData()">
-      📤 JSONでエクスポート（バックアップ）
-    </button>
-    <button class="backup-btn backup-btn-import" onclick="document.getElementById('import-file').click()">
-      📥 JSONからインポート（復元）
-    </button>
-    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-    <button class="backup-btn backup-btn-close" onclick="closeBackupModal()">✕ 閉じる</button>
-  </div>
-</div>
 
 /* ─────────────────────────────────────────
    REST TIMER
