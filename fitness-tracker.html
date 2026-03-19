@@ -1520,6 +1520,13 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="home-week-grid" id="home-week"></div>
   </div>
 
+  <!-- Monthly Summary -->
+  <div class="card" id="home-monthly-card">
+    <div class="card-label">📊 This Month</div>
+    <div class="glow-line"></div>
+    <div id="home-monthly-content"></div>
+  </div>
+
   <!-- Goals -->
   <div class="card" id="home-goals-card">
     <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;">
@@ -1594,17 +1601,33 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
           <button class="field-clear-btn" id="w-exercise-clear" type="button" onclick="clearExercise()">✕</button>
         </div>
         <datalist id="ex-list">
-          <option value="ベンチプレス"><option value="インクラインプレス"><option value="デクラインプレス">
-          <option value="スクワット"><option value="フロントスクワット"><option value="レッグプレス">
-          <option value="デッドリフト"><option value="ルーマニアンデッドリフト">
-          <option value="ショルダープレス"><option value="サイドレイズ"><option value="フロントレイズ">
-          <option value="ラットプルダウン"><option value="チンアップ"><option value="ベントオーバーロウ">
-          <option value="シーテッドロウ"><option value="バーベルロウ">
-          <option value="ダンベルカール"><option value="バーベルカール"><option value="ハンマーカール">
-          <option value="トライセプスエクステンション"><option value="ディップス"><option value="ケーブルプッシュダウン">
+          <!-- 胸 -->
+          <option value="ベンチプレス"><option value="インクラインベンチプレス"><option value="デクラインベンチプレス">
+          <option value="ダンベルフライ"><option value="インクラインフライ"><option value="チェストフライ"><option value="ペックデック">
+          <option value="ディップス"><option value="プッシュアップ">
+          <!-- 背中 -->
+          <option value="デッドリフト"><option value="ルーマニアンデッドリフト"><option value="スモウデッドリフト">
+          <option value="ラットプルダウン"><option value="チンアップ"><option value="プルアップ">
+          <option value="ベントオーバーロウ"><option value="バーベルロウ"><option value="シーテッドロウ">
+          <option value="ワンハンドダンベルロウ"><option value="Tバーロウ"><option value="ケーブルロウ">
+          <!-- 脚 -->
+          <option value="スクワット"><option value="フロントスクワット"><option value="ハックスクワット">
+          <option value="レッグプレス"><option value="ブルガリアンスプリットスクワット"><option value="ランジ">
           <option value="レッグカール"><option value="レッグエクステンション"><option value="カーフレイズ">
+          <option value="シーテッドカーフレイズ"><option value="ヒップスラスト">
+          <!-- 肩 -->
+          <option value="ショルダープレス"><option value="ダンベルショルダープレス"><option value="アーノルドプレス">
+          <option value="サイドレイズ"><option value="フロントレイズ"><option value="リアレイズ">
+          <option value="フェイスプル"><option value="アップライトロウ">
+          <!-- 腕（二頭） -->
+          <option value="バーベルカール"><option value="ダンベルカール"><option value="ハンマーカール">
+          <option value="インクラインカール"><option value="ケーブルカール"><option value="プリーチャーカール">
+          <!-- 腕（三頭） -->
+          <option value="トライセプスエクステンション"><option value="スカルクラッシャー">
+          <option value="ケーブルプッシュダウン"><option value="オーバーヘッドエクステンション">
+          <!-- 腹 -->
           <option value="クランチ"><option value="レッグレイズ"><option value="プランク">
-          <option value="チェストフライ"><option value="ペックデック">
+          <option value="サイドプランク"><option value="アブローラー"><option value="ケーブルクランチ">
         </datalist>
         <div class="autofill-hint" id="autofill-hint">⚡ 前回の記録を自動入力しました</div>
       </div>
@@ -1729,12 +1752,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 ════════════════════════════════════════ -->
 <div id="view-graph" class="view">
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="gTab('bw',this)">体重推移</button>
-    <button class="tab-btn" onclick="gTab('ex',this)">種目推移</button>
+    <button class="tab-btn" onclick="gTab('bw',this)">体重推移</button>
+    <button class="tab-btn active" onclick="gTab('ex',this)">種目推移</button>
     <button class="tab-btn" onclick="gTab('cardio',this)">有酸素</button>
   </div>
 
-  <div id="g-bw">
+  <div id="g-bw" style="display:none;">
     <div class="card">
       <div class="card-label" style="color:var(--amber);">Body Weight Trend</div>
       <div class="glow-line" style="background: linear-gradient(90deg, transparent, rgba(255,149,0,.2) 50%, transparent);"></div>
@@ -1750,7 +1773,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     </div>
   </div>
 
-  <div id="g-ex" style="display:none;">
+  <div id="g-ex" style="display:block;">
     <div class="card">
       <div class="field" style="margin-bottom:0;">
         <label>種目を選択</label>
@@ -3475,6 +3498,9 @@ function nextOnboarding() {
   } else {
     localStorage.setItem('ft_onboarded', '1');
     document.getElementById('onboarding-overlay').classList.remove('open');
+    // 完了後、LOGタブへ自動遷移（初回記録を即促す）
+    const navItems = document.querySelectorAll('.nav-item');
+    if (navItems[1]) nav('record', navItems[1]);
   }
 }
 
@@ -3956,8 +3982,11 @@ function renderHome() {
     const el  = document.getElementById(`home-${type}-streak`);
     const n   = calcStreak(load(type === 'w' ? K.w : K.c));
     const lbl = type === 'w' ? '💪 ウエイト' : '🏃 有酸素';
+    const numHtml = n === 0
+      ? `<div class="home-streak-mini-num" style="font-size:22px;line-height:1.4;">今日から！</div>`
+      : `<div class="home-streak-mini-num">${n}</div>`;
     el.innerHTML = `
-      <div class="home-streak-mini-num">${n}</div>
+      ${numHtml}
       <div class="home-streak-mini-label">${lbl} / 週連続</div>
       <div class="home-streak-mini-msg">${streakMsg(n, type)}</div>`;
   });
@@ -4013,6 +4042,7 @@ function renderHome() {
   // リスタートバナー & 今日のミッション
   renderRestartBanner();
   renderTodayMission();
+  renderMonthlySummary();
 
   // 習慣スコア
   renderHabitScore();
@@ -4297,6 +4327,81 @@ function calcHabitScore() {
   return { total: consistencyPts + streakPts + recoveryPts + trendPts, consistencyPts, streakPts, recoveryPts, trendPts, trainedLast28 };
 }
 
+/* ─────────────────────────────────────────
+   MONTHLY SUMMARY (Home)
+───────────────────────────────────────── */
+function renderMonthlySummary() {
+  const el = document.getElementById('home-monthly-content');
+  if (!el) return;
+  const t = today();
+  const [ty, tm] = t.split('-').map(Number);
+  const monthStart = `${ty}-${String(tm).padStart(2,'0')}-01`;
+  const monthEnd   = `${ty}-${String(tm).padStart(2,'0')}-31`;
+
+  const wAll = load(K.w).filter(r => r.date >= monthStart && r.date <= monthEnd);
+  const cAll = load(K.c).filter(r => r.date >= monthStart && r.date <= monthEnd);
+  const bAll = load(K.b).filter(r => r.date >= monthStart && r.date <= monthEnd);
+
+  const wDays = new Set(wAll.map(r => r.date)).size;
+  const cDays = new Set(cAll.map(r => r.date)).size;
+
+  // 今月の合計ボリューム
+  const totalVol = wAll.reduce((sum, r) => {
+    const sets = r.setData || [{ weight: r.weight||0, reps: r.reps||0 }];
+    return sum + sets.reduce((s2, s) => s2 + (s.weight||0)*(s.reps||0), 0);
+  }, 0);
+  const volStr = totalVol >= 1000 ? `${(totalVol/1000).toFixed(1)}t` : `${totalVol}kg`;
+
+  // 今月の最高1RM
+  let bestRM = 0, bestEx = '';
+  wAll.forEach(r => {
+    const sets = r.setData || [{ weight: r.weight||0, reps: r.reps||0 }];
+    sets.forEach(s => {
+      const rm = calc1RM(s.weight, s.reps);
+      if (rm > bestRM) { bestRM = rm; bestEx = r.exercise; }
+    });
+  });
+
+  // 体重変化（今月の最初と最後）
+  const bwSorted = bAll.sort((a,b) => a.date.localeCompare(b.date));
+  const bwFirst = bwSorted[0]?.weight, bwLast = bwSorted[bwSorted.length-1]?.weight;
+  const bwChange = (bwFirst && bwLast) ? +(bwLast - bwFirst).toFixed(1) : null;
+  const bwSign = bwChange === null ? '' : bwChange > 0 ? '+' : '';
+  const bwColor = bwChange === null ? 'var(--sub)' : bwChange > 0 ? 'var(--amber)' : 'var(--green)';
+
+  if (wDays === 0 && cDays === 0) {
+    el.innerHTML = `<div class="empty-state-cta" style="padding:14px 0 6px;"><div style="font-size:24px;margin-bottom:6px;">📊</div><div style="font-size:13px;color:var(--sub);">今月の記録がまだありません<br>記録するとここに集計が表示されます</div></div>`;
+    return;
+  }
+
+  const mnLabel = `${ty}年${tm}月`;
+  el.innerHTML = `
+    <div style="font-size:10px;color:var(--sub);font-weight:700;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase;">${mnLabel}</div>
+    <div class="monthly-grid">
+      <div class="monthly-item">
+        <div class="monthly-num">${wDays}</div>
+        <div class="monthly-label">💪 ウエイト日数</div>
+      </div>
+      <div class="monthly-item">
+        <div class="monthly-num green">${cDays}</div>
+        <div class="monthly-label">🏃 有酸素日数</div>
+      </div>
+      <div class="monthly-item" style="grid-column:1/-1;">
+        <div class="monthly-num" style="color:var(--accent);">${volStr}</div>
+        <div class="monthly-label">🏋️ 総ボリューム</div>
+      </div>
+      ${bestRM > 0 ? `<div class="monthly-item" style="grid-column:1/-1;">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;">${esc(bestEx)}</div>
+        <div class="monthly-num" style="color:var(--amber);">${bestRM}<span style="font-size:14px;font-weight:700;"> kg</span></div>
+        <div class="monthly-label">🏆 最高推定1RM</div>
+      </div>` : ''}
+      ${bwChange !== null ? `<div class="monthly-item" style="grid-column:1/-1;">
+        <div class="monthly-num" style="color:${bwColor};">${bwSign}${bwChange}kg</div>
+        <div class="monthly-label">⚖️ 体重変化</div>
+      </div>` : ''}
+    </div>`;
+}
+
 function renderHabitScore() {
   const el = document.getElementById('home-hs-content');
   if (!el) return;
@@ -4412,12 +4517,33 @@ function renderTodayMission() {
   if (todayWRecs.length > 0) {
     const exNames = [...new Set(todayWRecs.map(r => r.exercise))];
     const streak = calcStreak(load(K.w));
+    // 今日の合計ボリューム計算
+    const todayVol = todayWRecs.reduce((sum, r) => {
+      const sets = r.setData || [{ weight: r.weight||0, reps: r.reps||0 }];
+      return sum + sets.reduce((s2, s) => s2 + (s.weight||0)*(s.reps||0), 0);
+    }, 0);
+    const volStr = todayVol >= 1000 ? `${(todayVol/1000).toFixed(1)}t` : `${todayVol}kg`;
+    const todaySets = todayWRecs.reduce((sum, r) => sum + (r.setData ? r.setData.length : 1), 0);
     el.innerHTML = `
       <div class="mission-done-row">
         <span class="mission-done-icon">✅</span>
         <div>
           <div class="mission-done-title">今日のミッション完了！</div>
           <div class="mission-done-exs">${exNames.slice(0,4).map(e => esc(e)).join('　·　')}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin:10px 0 4px;flex-wrap:wrap;">
+        <div style="background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.2);border-radius:10px;padding:7px 14px;">
+          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">総ボリューム</div>
+          <div style="font-size:22px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums;">${volStr}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 14px;">
+          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">種目数</div>
+          <div style="font-size:22px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;">${exNames.length}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 14px;">
+          <div style="font-size:9px;font-weight:900;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">総セット</div>
+          <div style="font-size:22px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;">${todaySets}</div>
         </div>
       </div>
       ${streak > 0 ? `<div class="mission-streak-chip">🔥 ${streak}週連続継続中</div>` : ''}
