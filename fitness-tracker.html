@@ -1394,6 +1394,81 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 }
 .bw-goal-label { font-size:10px; font-weight:900; color:var(--amber); letter-spacing:.06em; text-transform:uppercase; }
 .bw-goal-pct { font-size:18px; font-weight:900; color:var(--amber); font-variant-numeric:tabular-nums; }
+
+/* REST TIMER */
+.rest-timer-fab {
+  position: fixed; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); right: 16px;
+  z-index: 150; display: none; flex-direction: column; align-items: center;
+  background: #1a1a1a; border: 1px solid rgba(255,85,0,.4); border-radius: 20px;
+  padding: 14px 16px 12px; box-shadow: 0 8px 32px rgba(0,0,0,.7), 0 0 20px rgba(255,85,0,.15);
+  min-width: 130px;
+}
+.rest-timer-fab.show { display: flex; }
+.rest-timer-label { font-size: 9px; font-weight: 900; color: var(--sub); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+.rest-timer-display { font-size: 36px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 10px; }
+.rest-timer-display.done { color: var(--green); animation: timerDone .4s ease infinite alternate; }
+@keyframes timerDone { from { opacity:1; } to { opacity:.4; } }
+.rest-timer-presets { display: flex; gap: 5px; margin-bottom: 10px; }
+.rest-preset-btn {
+  flex: 1; padding: 5px 2px; border-radius: 8px; border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04); color: var(--sub); font-size: 10px; font-weight: 800;
+  cursor: pointer; font-family: inherit; -webkit-appearance: none; transition: all .15s;
+  letter-spacing: .03em;
+}
+.rest-preset-btn.active { background: rgba(255,85,0,.2); border-color: rgba(255,85,0,.5); color: var(--accent); }
+.rest-preset-btn:active { transform: scale(.93); }
+.rest-timer-controls { display: flex; gap: 6px; width: 100%; }
+.rest-ctrl-btn {
+  flex: 1; padding: 7px 4px; border-radius: 10px; border: none;
+  font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
+  -webkit-appearance: none; transition: all .15s; letter-spacing: .03em;
+}
+.rest-ctrl-start { background: linear-gradient(135deg,#ff5500,#ff2d55); color: #fff; }
+.rest-ctrl-reset { background: rgba(255,255,255,.07); color: var(--sub); }
+.rest-ctrl-close { background: rgba(255,255,255,.04); color: var(--sub); }
+
+/* MUSCLE BALANCE */
+.mb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mb-item {
+  background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px; padding: 14px 16px;
+}
+.mb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.mb-part { font-size: 14px; font-weight: 900; }
+.mb-days-badge {
+  font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 10px;
+  letter-spacing: .04em;
+}
+.mb-days-badge.fresh  { background: rgba(0,212,106,.15); color: var(--green); }
+.mb-days-badge.ok     { background: rgba(255,149,0,.15); color: var(--amber); }
+.mb-days-badge.stale  { background: rgba(255,59,48,.15); color: var(--red); }
+.mb-days-badge.none   { background: rgba(255,255,255,.06); color: var(--sub); }
+.mb-bar-bg { height: 5px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.mb-bar-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.mb-last-date { font-size: 10px; color: var(--sub); font-weight: 700; }
+
+/* DATA BACKUP */
+.backup-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 500;
+  display: none; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.backup-modal.open { display: flex; }
+.backup-sheet {
+  width: 100%; max-width: 480px; background: #111;
+  border-radius: 24px 24px 0 0; padding: 24px 20px max(env(safe-area-inset-bottom,0px),24px);
+  border-top: 1px solid rgba(255,255,255,.08); animation: slideUp .22s ease;
+}
+.backup-title { font-size: 13px; font-weight: 900; color: var(--sub); text-transform: uppercase; letter-spacing: .1em; text-align: center; margin-bottom: 20px; }
+.backup-btn {
+  width: 100%; padding: 15px; border-radius: 14px; margin-bottom: 10px;
+  font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
+  -webkit-appearance: none; border: none; text-align: center; transition: all .15s;
+}
+.backup-btn-export { background: linear-gradient(135deg, rgba(255,85,0,.2), rgba(255,45,85,.15)); color: var(--accent); border: 1px solid rgba(255,85,0,.3); }
+.backup-btn-import { background: rgba(255,255,255,.05); color: var(--text); border: 1px solid rgba(255,255,255,.1); }
+.backup-btn-close  { background: transparent; color: var(--sub); border: 1px solid rgba(255,255,255,.08); }
+.backup-btn:active { transform: scale(.97); }
 </style>
 </head>
 <body>
@@ -1553,6 +1628,10 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="app-util-btn" onclick="shareInvite()" style="color:var(--green);border-color:rgba(0,212,106,.25);">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       友達に紹介
+    </button>
+    <button class="app-util-btn" onclick="openBackupModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      データ管理
     </button>
     <span class="sync-icon app-util-btn" id="sync-icon" title="同期状態" onclick="openUserMenu()" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -1755,6 +1834,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <button class="tab-btn" onclick="gTab('bw',this)">体重推移</button>
     <button class="tab-btn active" onclick="gTab('ex',this)">種目推移</button>
     <button class="tab-btn" onclick="gTab('cardio',this)">有酸素</button>
+    <button class="tab-btn" onclick="gTab('balance',this)">筋肉バランス</button>
   </div>
 
   <div id="g-bw" style="display:none;">
@@ -1812,6 +1892,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="chart-wrap" id="cardio-chart-wrap">
         <canvas id="cardio-chart"></canvas>
       </div>
+    </div>
+  </div>
+
+  <div id="g-balance" style="display:none;">
+    <div class="card">
+      <div class="card-label">💪 Muscle Balance</div>
+      <div class="glow-line"></div>
+      <div id="muscle-balance-grid"></div>
     </div>
   </div>
 
@@ -2264,6 +2352,7 @@ function saveWeight() {
   } else {
     arr.push({ id: uid(), date, exercise, memo, setData });
     toast('🔥 記録しました！');
+    showRestTimer();
   }
   save(K.w, arr);
   showLimit.w = 15;
@@ -2662,9 +2751,11 @@ function gTab(tab, el) {
   document.getElementById('g-bw').style.display     = tab==='bw'     ? 'block' : 'none';
   document.getElementById('g-ex').style.display     = tab==='ex'     ? 'block' : 'none';
   document.getElementById('g-cardio').style.display = tab==='cardio' ? 'block' : 'none';
+  document.getElementById('g-balance').style.display = tab==='balance' ? 'block' : 'none';
   if (tab==='bw')     setTimeout(drawBwChart, 60);
   if (tab==='ex')     fillExSel();
   if (tab==='cardio') setTimeout(drawCardioChart, 60);
+  if (tab==='balance') renderMuscleBalance();
 }
 
 function resetChartWrap(wrapId, canvasId) {
@@ -4933,6 +5024,199 @@ function renderTodayWorkout() {
       </div>`;
   }).join('');
 }
+
+<!-- REST TIMER FAB -->
+<div class="rest-timer-fab" id="rest-timer-fab">
+  <div class="rest-timer-label">⏱ REST</div>
+  <div class="rest-timer-display" id="rest-timer-display">1:30</div>
+  <div class="rest-timer-presets">
+    <button class="rest-preset-btn" onclick="setRestPreset(60)">1m</button>
+    <button class="rest-preset-btn active" onclick="setRestPreset(90)">1:30</button>
+    <button class="rest-preset-btn" onclick="setRestPreset(120)">2m</button>
+    <button class="rest-preset-btn" onclick="setRestPreset(180)">3m</button>
+  </div>
+  <div class="rest-timer-controls">
+    <button class="rest-ctrl-btn rest-ctrl-start" id="rest-ctrl-start" onclick="toggleRestTimer()">▶ スタート</button>
+    <button class="rest-ctrl-btn rest-ctrl-reset" onclick="resetRestTimer()">↺</button>
+    <button class="rest-ctrl-btn rest-ctrl-close" onclick="closeRestTimer()">✕</button>
+  </div>
+</div>
+<!-- BACKUP MODAL -->
+<div class="backup-modal" id="backup-modal" onclick="closeBackupModal(event)">
+  <div class="backup-sheet">
+    <div class="backup-title">// データ管理</div>
+    <button class="backup-btn backup-btn-export" onclick="exportData()">
+      📤 JSONでエクスポート（バックアップ）
+    </button>
+    <button class="backup-btn backup-btn-import" onclick="document.getElementById('import-file').click()">
+      📥 JSONからインポート（復元）
+    </button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="backup-btn backup-btn-close" onclick="closeBackupModal()">✕ 閉じる</button>
+  </div>
+</div>
+
+/* ─────────────────────────────────────────
+   REST TIMER
+───────────────────────────────────────── */
+let _restTotal = 90, _restRemain = 90, _restRunning = false, _restInterval = null;
+
+function showRestTimer() {
+  const fab = document.getElementById('rest-timer-fab');
+  if (!fab) return;
+  fab.classList.add('show');
+  resetRestTimer(false);
+}
+function closeRestTimer() {
+  clearInterval(_restInterval);
+  _restRunning = false;
+  document.getElementById('rest-timer-fab').classList.remove('show');
+}
+function setRestPreset(sec) {
+  _restTotal = sec; _restRemain = sec; _restRunning = false;
+  clearInterval(_restInterval);
+  updateRestDisplay();
+  document.querySelectorAll('.rest-preset-btn').forEach(b => b.classList.remove('active'));
+  const map = {60:0, 90:1, 120:2, 180:3};
+  const idx = map[sec];
+  if (idx !== undefined) document.querySelectorAll('.rest-preset-btn')[idx]?.classList.add('active');
+  document.getElementById('rest-ctrl-start').textContent = '▶ スタート';
+  document.getElementById('rest-timer-display').classList.remove('done');
+}
+function toggleRestTimer() {
+  if (_restRunning) {
+    clearInterval(_restInterval); _restRunning = false;
+    document.getElementById('rest-ctrl-start').textContent = '▶ 再開';
+  } else {
+    if (_restRemain <= 0) { _restRemain = _restTotal; document.getElementById('rest-timer-display').classList.remove('done'); }
+    _restRunning = true;
+    document.getElementById('rest-ctrl-start').textContent = '⏸ 一時停止';
+    _restInterval = setInterval(() => {
+      _restRemain--;
+      updateRestDisplay();
+      if (_restRemain <= 0) {
+        clearInterval(_restInterval); _restRunning = false;
+        document.getElementById('rest-timer-display').classList.add('done');
+        document.getElementById('rest-ctrl-start').textContent = '▶ もう一度';
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000);
+  }
+}
+function resetRestTimer(rerender = true) {
+  clearInterval(_restInterval); _restRunning = false;
+  _restRemain = _restTotal;
+  if (rerender) {
+    updateRestDisplay();
+    document.getElementById('rest-ctrl-start').textContent = '▶ スタート';
+    document.getElementById('rest-timer-display').classList.remove('done');
+  }
+}
+function updateRestDisplay() {
+  const m = Math.floor(_restRemain / 60), s = _restRemain % 60;
+  document.getElementById('rest-timer-display').textContent = m + ':' + String(s).padStart(2,'0');
+}
+
+/* ─────────────────────────────────────────
+   MUSCLE BALANCE
+───────────────────────────────────────── */
+function renderMuscleBalance() {
+  const el = document.getElementById('muscle-balance-grid');
+  if (!el) return;
+  const t = today();
+  const tagData = JSON.parse(localStorage.getItem('ft_day_tags') || '{}');
+  const parts = [
+    { name:'胸', icon:'🏋️', part:'胸' },
+    { name:'背中', icon:'🔙', part:'背中' },
+    { name:'脚', icon:'🦵', part:'脚' },
+    { name:'肩', icon:'💪', part:'肩' },
+    { name:'腕', icon:'💪', part:'腕' },
+    { name:'全身', icon:'⚡', part:'全身' },
+  ];
+  el.innerHTML = '<div class="mb-grid">' + parts.map(function(p) {
+    const dates = Object.entries(tagData)
+      .filter(function(entry) { return entry[1].includes(p.part) && entry[0] <= t; })
+      .map(function(entry) { return entry[0]; }).sort(function(a,b) { return b.localeCompare(a); });
+    const lastDate = dates[0] || null;
+    const days = lastDate
+      ? Math.floor((new Date(t+'T12:00:00Z') - new Date(lastDate+'T12:00:00Z')) / 86400000)
+      : null;
+    const maxDays = 14;
+    const pct = days !== null ? Math.max(5, 100 - Math.min(100, (days / maxDays) * 100)) : 0;
+    const cls = days === null ? 'none' : days <= 3 ? 'fresh' : days <= 7 ? 'ok' : 'stale';
+    const barColor = cls === 'fresh' ? 'var(--green)' : cls === 'ok' ? 'var(--amber)' : cls === 'stale' ? 'var(--red)' : 'rgba(255,255,255,.15)';
+    const label = days === null ? '未記録' : days === 0 ? '今日' : days + '日前';
+    const dateStr = lastDate ? lastDate.slice(5).replace('-','/') : '—';
+    return '<div class="mb-item">' +
+      '<div class="mb-header">' +
+        '<span class="mb-part">' + p.icon + ' ' + p.name + '</span>' +
+        '<span class="mb-days-badge ' + cls + '">' + label + '</span>' +
+      '</div>' +
+      '<div class="mb-bar-bg"><div class="mb-bar-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div>' +
+      '<div class="mb-last-date">最終: ' + dateStr + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+/* ─────────────────────────────────────────
+   DATA BACKUP / RESTORE
+───────────────────────────────────────── */
+function openBackupModal() { document.getElementById('backup-modal').classList.add('open'); }
+function closeBackupModal(e) {
+  if (e && e.target !== document.getElementById('backup-modal')) return;
+  if (!e) document.getElementById('backup-modal').classList.remove('open');
+  if (e && e.target === document.getElementById('backup-modal')) document.getElementById('backup-modal').classList.remove('open');
+}
+
+function exportData() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    weights:  JSON.parse(localStorage.getItem('ft_weights')  || '[]'),
+    cardio:   JSON.parse(localStorage.getItem('ft_cardio')   || '[]'),
+    body:     JSON.parse(localStorage.getItem('ft_body')     || '[]'),
+    goals:    JSON.parse(localStorage.getItem('ft_goals')    || '{}'),
+    favs:     JSON.parse(localStorage.getItem('ft_favs')     || '[]'),
+    dayTags:  JSON.parse(localStorage.getItem('ft_day_tags') || '{}'),
+    badges:   JSON.parse(localStorage.getItem('ln_badges')   || '{}'),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'liftnote-backup-' + today() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('backup-modal').classList.remove('open');
+  toast('📤 バックアップを保存しました！');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.version) throw new Error('不正なファイル');
+      if (data.weights)  localStorage.setItem('ft_weights',  JSON.stringify(data.weights));
+      if (data.cardio)   localStorage.setItem('ft_cardio',   JSON.stringify(data.cardio));
+      if (data.body)     localStorage.setItem('ft_body',     JSON.stringify(data.body));
+      if (data.goals)    localStorage.setItem('ft_goals',    JSON.stringify(data.goals));
+      if (data.favs)     localStorage.setItem('ft_favs',     JSON.stringify(data.favs));
+      if (data.dayTags)  localStorage.setItem('ft_day_tags', JSON.stringify(data.dayTags));
+      if (data.badges)   localStorage.setItem('ln_badges',   JSON.stringify(data.badges));
+      document.getElementById('backup-modal').classList.remove('open');
+      toast('📥 データを復元しました！');
+      renderHome(); renderWRecent(); renderCRecent(); renderBRecent();
+    } catch (err) {
+      toast('⚠️ 読み込みに失敗しました: ' + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 </script>
 </body>
 </html>
