@@ -4736,6 +4736,19 @@ function renderTodayMission() {
   const cDates = new Set(load(K.c).map(r => r.date));
   const todayWRecs = load(K.w).filter(r => r.date === t);
 
+  // ORDER-01: 初回ユーザー向けEmpty State
+  const totalRecs = load(K.w).length + load(K.c).length;
+  if (totalRecs === 0) {
+    el.innerHTML = `
+      <div class="empty-state-cta">
+        <div class="empty-state-icon">💪</div>
+        <div class="empty-state-title">今日、最初の記録をつけよう！</div>
+        <div class="empty-state-sub">記録するたびにHabit Scoreが上がります</div>
+        <button class="empty-state-btn" onclick="nav('record', document.querySelectorAll('.nav-item')[1])">記録する →</button>
+      </div>`;
+    return;
+  }
+
   // 直近7日ドット
   const last7 = Array.from({length:7}, (_,i) => {
     const d = new Date(Date.UTC(...t.split('-').map((v,j)=>j===1?+v-1:+v), 12));
