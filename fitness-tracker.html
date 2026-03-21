@@ -808,13 +808,14 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
 }
 .cal-nav-btn:active { background:rgba(255,85,0,.15); border-color:rgba(255,85,0,.3); }
 .cal-month-title { font-size:20px; font-weight:900; color:var(--text); letter-spacing:-.3px; }
-.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
 .cal-dow { text-align:center; font-size:9px; font-weight:900; color:var(--sub); padding:4px 0 12px; letter-spacing:.06em; text-transform:uppercase; }
 .cal-dow.sun { color:rgba(255,59,48,.7); } .cal-dow.sat { color:rgba(94,158,255,.7); }
 .cal-cell {
   aspect-ratio:1; border-radius:12px; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:3px;
   cursor:pointer; transition:all .18s; position:relative;
+  min-height:44px;
 }
 .cal-cell:active { transform:scale(.93); } .cal-cell.empty { cursor:default; pointer-events:none; }
 .cal-num { font-size:15px; font-weight:900; color:var(--text); line-height:1; }
@@ -1741,12 +1742,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="row2">
         <div class="stat-field">
           <label>時間</label>
-          <input type="number" id="c-duration" placeholder="30" min="1" style="color:var(--green);">
+          <input type="number" id="c-duration" placeholder="30" min="1" inputmode="decimal" style="color:var(--green);">
           <div class="stat-unit">分</div>
         </div>
         <div class="stat-field">
           <label>距離</label>
-          <input type="number" id="c-distance" placeholder="5.0" min="0" step="0.1" style="color:var(--green);">
+          <input type="number" id="c-distance" placeholder="5.0" min="0" step="0.1" inputmode="decimal" style="color:var(--green);">
           <div class="stat-unit">km</div>
         </div>
       </div>
@@ -1775,13 +1776,13 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
       <div class="row2" style="margin-bottom:12px;">
         <div class="stat-field">
           <label>体重</label>
-          <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1"
+          <input type="number" id="b-weight" placeholder="70.0" min="1" step="0.1" inputmode="decimal"
                  style="font-size:36px;color:var(--amber);text-align:center;">
           <div class="stat-unit">kg</div>
         </div>
         <div class="stat-field">
           <label>体脂肪率</label>
-          <input type="number" id="b-fat" placeholder="20.0" min="1" max="60" step="0.1"
+          <input type="number" id="b-fat" placeholder="20.0" min="1" max="60" step="0.1" inputmode="decimal"
                  style="font-size:36px;color:var(--accent2);text-align:center;">
           <div class="stat-unit">%</div>
         </div>
@@ -1845,7 +1846,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   </div>
 
   <div id="g-ex" style="display:block;">
-    <div class="card">
+    <div class="card" style="position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:linear-gradient(160deg,rgba(22,22,22,.97) 0%,rgba(15,15,15,.97) 100%);">
       <div class="field" style="margin-bottom:0;">
         <label>種目を選択</label>
         <select id="ex-sel" onchange="drawExChart()">
@@ -2045,15 +2046,15 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
     <div class="goal-modal-title">🎯 目標を設定する</div>
     <div class="field">
       <label>目標体重 (kg)</label>
-      <input type="number" id="gm-weight" placeholder="例: 70.0" min="30" max="200" step="0.1">
+      <input type="number" id="gm-weight" placeholder="例: 70.0" min="30" max="200" step="0.1" inputmode="decimal">
     </div>
     <div class="field">
       <label>週間ウエイト目標 (回)</label>
-      <input type="number" id="gm-weekly-w" placeholder="例: 4" min="1" max="7">
+      <input type="number" id="gm-weekly-w" placeholder="例: 4" min="1" max="7" inputmode="numeric">
     </div>
     <div class="field">
       <label>週間有酸素目標 (回)</label>
-      <input type="number" id="gm-weekly-c" placeholder="例: 3" min="1" max="7">
+      <input type="number" id="gm-weekly-c" placeholder="例: 3" min="1" max="7" inputmode="numeric">
     </div>
     <button class="btn btn-primary" onclick="saveGoals()" style="margin-top:4px;">保存</button>
     <button class="modal-close" onclick="closeGoalModal()">キャンセル</button>
@@ -2384,7 +2385,7 @@ function saveWeight() {
     toast('✅ 更新しました！');
   } else {
     arr.push({ id: uid(), date, exercise, memo, setData });
-    toast('🔥 記録しました！');
+    toast('🎉 記録しました！');
     showRestTimer();
   }
   save(K.w, arr);
@@ -2397,9 +2398,24 @@ function saveWeight() {
   if (!editingId.w) setTimeout(() => checkBadges(), 600);
   // 次の種目をすぐ入力できるようフォーカス
   setTimeout(() => { const ex = document.getElementById('w-exercise'); if (ex) ex.focus(); }, 80);
-  // Layer 2: 前回記録との比較シートを表示（少し遅延させてトーストと重複させない）
+  // ORDER-02: 2段階トースト（今日N種目目 + 前回比）
+  if (isNewRecord) {
+    setTimeout(() => {
+      const todayCount = load(K.w).filter(r => r.date === date).length;
+      if (prevRecord) {
+        const newMaxW  = Math.max(...setData.map(s => s.weight||0));
+        const prevMaxW = Math.max(...(prevRecord.setData||[{weight:prevRecord.weight||0}]).map(s=>s.weight||0));
+        const diff = newMaxW - prevMaxW;
+        const diffStr = diff > 0 ? `+${diff}kg 📈` : diff < 0 ? `${diff}kg 📉` : '±0kg';
+        toast(`今日 ${todayCount}種目目！ | 前回比 ${diffStr}`);
+      } else {
+        toast(`今日 ${todayCount}種目目！ | 続けて記録しよう 💪`);
+      }
+    }, 900);
+  }
+  // Layer 2: 前回記録との比較シートを表示
   if (isNewRecord && prevRecord) {
-    setTimeout(() => showSaveComparison(exercise, setData, prevRecord), 500);
+    setTimeout(() => showSaveComparison(exercise, setData, prevRecord), 1800);
   }
 }
 
@@ -3984,19 +4000,19 @@ function addSetRow(weight = '', reps = '', assisted = '') {
     <div class="set-row-inputs">
       <div class="stat-field">
         <label>重量</label>
-        <input type="number" class="set-weight" value="${weight}" placeholder="60" min="0" step="0.5"
+        <input type="number" class="set-weight" value="${weight}" placeholder="60" min="0" step="0.5" inputmode="decimal"
                style="font-size:22px;color:var(--accent);">
         <div class="stat-unit">kg</div>
       </div>
       <div class="stat-field">
         <label>回数</label>
-        <input type="number" class="set-reps" value="${reps}" placeholder="10" min="1"
+        <input type="number" class="set-reps" value="${reps}" placeholder="10" min="1" inputmode="numeric"
                style="font-size:22px;color:var(--text);">
         <div class="stat-unit">reps</div>
       </div>
       <div class="stat-field assisted">
         <label>補助</label>
-        <input type="number" class="set-assisted" value="${assisted}" placeholder="0" min="0">
+        <input type="number" class="set-assisted" value="${assisted}" placeholder="0" min="0" inputmode="numeric">
         <div class="stat-unit">reps</div>
       </div>
     </div>
