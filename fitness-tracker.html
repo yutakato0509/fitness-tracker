@@ -1352,6 +1352,34 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
   flex-shrink:0; font-family:inherit; -webkit-appearance:none;
 }
 
+/* ═══════════ NOTIF PERMISSION BANNER ═══════════ */
+.notif-banner {
+  display:none; align-items:center; gap:12px;
+  background:linear-gradient(135deg,rgba(255,85,0,.12),rgba(255,45,85,.07));
+  border:1px solid rgba(255,85,0,.25); border-radius:16px;
+  padding:14px 16px; margin:0 14px 10px;
+}
+.notif-banner.show { display:flex; }
+.notif-banner-icon { font-size:26px; flex-shrink:0; }
+.notif-banner-body { flex:1; min-width:0; }
+.notif-banner-title { font-size:13px; font-weight:800; color:#fff; }
+.notif-banner-sub   { font-size:11px; color:rgba(255,85,0,.85); font-weight:700; margin-top:2px; }
+.notif-banner-btn {
+  padding:8px 14px; border-radius:20px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none; color:#fff; font-size:11px; font-weight:900;
+  cursor:pointer; font-family:inherit; -webkit-appearance:none;
+  white-space:nowrap; letter-spacing:.04em; transition:transform .12s;
+}
+.notif-banner-btn:active { transform:scale(.94); }
+.notif-banner-close {
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(255,255,255,.07); border:none;
+  color:var(--sub); font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-family:inherit; -webkit-appearance:none;
+}
+
 /* ═══════════ HABIT SCORE ═══════════ */
 .hs-wrap { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
 .hs-score-circle { width:72px; height:72px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; border:3px solid var(--accent); background:rgba(255,85,0,.08); }
@@ -1579,6 +1607,17 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia
      VIEW: ホーム（ダッシュボード）
 ════════════════════════════════════════ -->
 <div id="view-home" class="view active">
+
+  <!-- 通知許可バナー -->
+  <div class="notif-banner" id="notif-banner">
+    <div class="notif-banner-icon">🔔</div>
+    <div class="notif-banner-body">
+      <div class="notif-banner-title">トレ忘れ防止リマインダー</div>
+      <div class="notif-banner-sub">24時間サボったら通知で背中を押します</div>
+    </div>
+    <button class="notif-banner-btn" onclick="requestNotifPermission()">ON にする</button>
+    <button class="notif-banner-close" onclick="dismissNotifBanner()">✕</button>
+  </div>
 
   <!-- リスタートバナー（3日以上空いたとき表示） -->
   <div class="restart-banner" id="restart-banner" style="display:none;"
@@ -2235,6 +2274,7 @@ window.addEventListener('DOMContentLoaded', () => {
   openPhotoDB();
   initFirebase();
   checkOnboarding();
+  initNotifications();
   checkPwaBanner();
   setTimeout(checkLoginPrompt, 2000);
 
@@ -3709,6 +3749,8 @@ function _completeOnboarding() {
   // 完了後、LOGタブへ自動遷移（初回記録を即促す）
   const navItems = document.querySelectorAll('.nav-item');
   if (navItems[1]) nav('record', navItems[1]);
+  // 一定時間後に通知バナーを表示
+  setTimeout(checkNotifBanner, 3000);
 }
 function triggerObPwaInstall() {
   if (_deferredInstallPrompt) {
@@ -3723,6 +3765,82 @@ function nextOnboarding() {
     _renderObSlide();
   } else {
     _completeOnboarding();
+  }
+}
+
+/* ─────────────────────────────────────────
+   NOTIFICATIONS (リマインダー)
+───────────────────────────────────────── */
+function checkNotifBanner() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    // 許可済み → 直接リマインダーをチェック
+    fireReminderIfNeeded();
+    return;
+  }
+  if (Notification.permission === 'denied') return;
+  if (localStorage.getItem('ft_notif_dismissed')) return;
+  // 3件以上記録があればバナー表示
+  const total = load(K.w).length + load(K.c).length;
+  if (total < 3) return;
+  document.getElementById('notif-banner').classList.add('show');
+}
+
+function dismissNotifBanner() {
+  document.getElementById('notif-banner').classList.remove('show');
+  localStorage.setItem('ft_notif_dismissed', '1');
+}
+
+async function requestNotifPermission() {
+  document.getElementById('notif-banner').classList.remove('show');
+  const result = await Notification.requestPermission();
+  if (result === 'granted') {
+    toast('🔔 リマインダーON！トレをサボったら通知します');
+    localStorage.removeItem('ft_notif_dismissed');
+    fireReminderIfNeeded();
+  }
+}
+
+function fireReminderIfNeeded() {
+  if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
+  const allW = load(K.w), allC = load(K.c);
+  if (!allW.length && !allC.length) return;
+  const lastDate = [...allW, ...allC]
+    .map(r => r.date).sort((a,b) => b.localeCompare(a))[0];
+  if (!lastDate) return;
+  const hoursSince = (Date.now() - new Date(lastDate + 'T12:00:00Z').getTime()) / 36e5;
+  // 24〜72時間のギャップがあれば通知（毎回は出さない）
+  const lastNotif = parseInt(localStorage.getItem('ft_last_notif') || '0');
+  const hoursSinceNotif = (Date.now() - lastNotif) / 36e5;
+  if (hoursSince >= 24 && hoursSinceNotif >= 20) {
+    const msgs = [
+      { title:'💪 今日、トレする？', body: '昨日からサボってるよ。1種目だけでも記録しよう。' },
+      { title:'🔥 習慣が途切れそう…', body: `最終トレから${Math.floor(hoursSince)}時間。今日こそLiftNoteを開こう。` },
+      { title:'🏋️ お前のベンチが呼んでる', body: 'データは嘘をつかない。今日の記録を残そう。' },
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(m.title, {
+        body: m.body,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        tag: 'liftnote-reminder',
+        renotify: false,
+      });
+    });
+    localStorage.setItem('ft_last_notif', Date.now().toString());
+  }
+}
+
+function initNotifications() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    fireReminderIfNeeded();
+  } else {
+    // オンボーディング未完了でなければバナー表示を検討
+    if (localStorage.getItem('ft_onboarded')) {
+      setTimeout(checkNotifBanner, 1500);
+    }
   }
 }
 

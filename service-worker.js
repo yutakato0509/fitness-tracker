@@ -1,4 +1,4 @@
-const CACHE = 'fitness-tracker-v1';
+const CACHE = 'liftnote-v1';
 const SHELL = ['/'];
 
 self.addEventListener('install', e => {
@@ -25,6 +25,18 @@ self.addEventListener('fetch', e => {
         return res;
       });
       return cached || network;
+    })
+  );
+});
+
+// リマインダー通知
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return clients.openWindow('/');
     })
   );
 });
