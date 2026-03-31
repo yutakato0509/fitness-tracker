@@ -21,15 +21,15 @@
 <meta name="twitter:description" content="無料・インストール不要のPWA筋トレ記録アプリ LiftNote。ウエイト・有酸素・体重をスマートに管理。">
 <meta name="twitter:image"       content="https://yutakato0509.github.io/liftnote/og-image.svg">
 
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="theme-color" content="#ff5500">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LiftNote">
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
   }
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" onerror="console.warn('Firebase app SDK failed to load')"></script>

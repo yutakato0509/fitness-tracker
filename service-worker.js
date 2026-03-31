@@ -1,5 +1,5 @@
-const CACHE = 'liftnote-v1';
-const SHELL = ['/'];
+const CACHE = 'liftnote-v2';
+const SHELL = [self.registration.scope];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
@@ -36,7 +36,7 @@ self.addEventListener('notificationclick', e => {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       const existing = list.find(c => c.url.includes(self.location.origin));
       if (existing) return existing.focus();
-      return clients.openWindow('/');
+      return clients.openWindow(self.registration.scope);
     })
   );
 });
